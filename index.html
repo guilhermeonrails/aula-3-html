@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 3 — Redes e Linux</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #222; background: #fff; }
+.layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); }
+nav { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 16px; background: #f4f4f4; border-right: 1px solid #ddd; font-size: 14px; }
+nav h1 { font-size: 18px; margin: 0 0 12px; }
+nav ul { list-style: none; margin: 0; padding: 0; }
+nav > ul > li { margin-bottom: 10px; }
+nav > ul > li > a { font-weight: bold; }
+nav li li a { padding-left: 12px; }
+nav a { display: block; padding: 2px 4px; color: #0645ad; text-decoration: none; border-radius: 3px; }
+nav a:hover { background: #e2e2e2; }
+main { padding: 16px 32px 64px; max-width: 980px; }
+h2 { margin-top: 48px; padding-bottom: 4px; border-bottom: 2px solid #333; }
+section.passo { margin-top: 32px; padding-top: 8px; border-top: 1px solid #ddd; }
+.oque { background: #eef4ff; border-left: 4px solid #3b7ddd; padding: 4px 16px 8px; margin-top: 12px; }
+.oque h3 { margin-top: 12px; }
+.desafio { background: #fff8db; border-left: 4px solid #e0b000; padding: 8px 12px; }
+.aviso { background: #fde8e8; border-left: 4px solid #c33; padding: 8px 12px; }
+.explica { margin: 20px 0 6px; }
+blockquote { margin: 8px 0; padding: 4px 12px; border-left: 4px solid #ccc; color: #555; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; background: #eee; padding: 0 3px; border-radius: 3px; }
+pre { position: relative; background: #f2f2f2; padding: 10px 12px; overflow-x: auto; border-radius: 4px; tab-size: 8; }
+pre code { background: none; padding: 0; }
+pre.cmd { background: #1e1e1e; color: #f0f0f0; border-left: 4px solid #4caf50; }
+pre .copiar { position: absolute; top: 6px; right: 6px; font-size: 12px; cursor: pointer; }
+table { border-collapse: collapse; margin: 8px 0 16px; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; vertical-align: top; }
+th { background: #eee; }
+:target > h3, h2:target, h3:target { background: #fff3b0; }
+@media (max-width: 800px) {
+  .layout { display: block; }
+  nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid #ddd; }
+  main { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+<h1>Aula 3 — Redes e Linux</h1>
+<ul>
+<li><a href="#p1-historia">A história da aula</a></li>
+<li><a href="#linux-do-zero">Linux do zero</a><ul><li><a href="#ldz-1">O terminal e o prompt</a></li><li><a href="#ldz-2">Como ler um comando</a></li><li><a href="#ldz-3">As pastas do Linux</a></li><li><a href="#ldz-4">Atalhos e comandos de sobrevivência</a></li></ul></li>
+<li><a href="#p1-antes">Preparação: subir o Kali</a></li>
+<li><a href="#t1">Tópico 1 — DNS</a><ul><li><a href="#t1-oque">O que é DNS?</a></li><li><a href="#t1-p1">1. <code>cat /etc/resolv.conf</code></a></li><li><a href="#t1-p2">2. <code>host</code></a></li><li><a href="#t1-p3">3. <code>nslookup</code></a></li><li><a href="#t1-p4">4. <code>dig</code></a></li><li><a href="#t1-p5">5. <code>dig +short</code></a></li><li><a href="#t1-p6">6. <code>dig @servidor</code></a></li><li><a href="#t1-p7">7. <code>dig +trace</code></a></li></ul></li>
+<li><a href="#t2">Tópico 2 — TCP/IP</a><ul><li><a href="#t2-oque">O que é TCP/IP?</a></li><li><a href="#t2-p1">1. <code>hostname -I</code> e <code>ip -br a</code></a></li><li><a href="#t2-p2">2. <code>ping</code></a></li><li><a href="#t2-p3">3. <code>nc -zv</code></a></li><li><a href="#t2-p4">4. <code>nc</code> e <code>ss -tn</code></a></li></ul></li>
+<li><a href="#t3">Tópico 3 — Roteadores</a><ul><li><a href="#t3-oque">O que é um roteador?</a></li><li><a href="#t3-p1">1. <code>ip r</code></a></li><li><a href="#t3-p2">2. <code>ip neigh</code></a></li><li><a href="#t3-p3">3. <code>traceroute</code></a></li><li><a href="#t3-p4">4. <code>whois</code> e <code>grep</code></a></li><li><a href="#t3-p5">5. <code>mtr</code></a></li></ul></li>
+<li><a href="#t4">Tópico 4 — HTTP e HTTPS</a><ul><li><a href="#t4-oque">O que são HTTP e HTTPS?</a></li><li><a href="#t4-p1">1. <code>curl -I</code></a></li><li><a href="#t4-p2">2. <code>curl</code></a></li><li><a href="#t4-p3">3. <code>curl -A</code></a></li><li><a href="#t4-p4">4. <code>http://</code> e o 301</a></li><li><a href="#t4-p5">5. <code>curl -v</code></a></li></ul></li>
+<li><a href="#t5">Tópico 5 — Cliente-servidor</a><ul><li><a href="#t5-oque">O que é o modelo cliente-servidor?</a></li><li><a href="#t5-p1">1. <code>mkdir</code>, <code>cd</code> e <code>vim</code></a></li><li><a href="#t5-p2">2. <code>python3 -m http.server</code></a></li><li><a href="#t5-p3">3. <code>ss -tuln</code></a></li><li><a href="#t5-p4">4. <code>curl</code> e o log</a></li><li><a href="#t5-p5">5. <code>nc -l</code></a></li></ul></li>
+<li><a href="#p2-pratica">Parte 2 — Laboratório: o que um IP revela</a><ul><li><a href="#p2-p1">1. Subir o laboratório</a></li><li><a href="#p2-p2">2. Entrar no atacante</a></li><li><a href="#p2-p3">3. <code>ping</code>: sem internet</a></li><li><a href="#p2-p4">4. <code>getent</code></a></li><li><a href="#p2-p5">5. <code>nmap</code></a></li><li><a href="#p2-p6">6. <code>nmap -sV</code></a></li><li><a href="#p2-p7">7. O log da vítima</a></li><li><a href="#p2-p8">8. <code>kill</code>: fechar a porta</a></li><li><a href="#p2-p9">9. Encerrar</a></li></ul></li>
+<li><a href="#resumo">Resumo dos comandos</a></li>
+</ul>
+</nav>
+<main>
+<h1>Aula 3 — Comandos e explicações</h1>
+<p>Comece pela <a href="#p1-historia">história da aula</a>: ela explica por que a viagem começa pelo IP da NBA. Cada tópico abre com o conceito em palavras simples (quadro azul) e o desafio (quadro amarelo). Cada passo mostra o comando (bloco escuro, com botão <em>copiar</em>), a saída de exemplo (bloco cinza) e as explicações do roteiro.</p>
+<section id="p1-historia"><h2>A história da aula: por que começar pelo IP da NBA?</h2>
+<p><strong>A pergunta da aula.</strong> Todo mundo já digitou um endereço no navegador e viu a página aparecer. A aula inteira responde a uma pergunta só: <strong>o que acontece entre apertar Enter e a página aparecer?</strong> Para responder, vamos seguir um pedido de verdade, do começo ao fim, e usar o terminal do Kali para enxergar cada etapa.</p>
+<p><strong>Por que o site da NBA?</strong> Qualquer site serviria. O <code>www.nba.com</code> é um bom exemplo porque é conhecido e, num endereço só, mostra quase tudo o que a aula quer ensinar:</p>
+<ul><li>o nome dele passa por <strong>apelidos</strong> até chegar a um endereço (tópico 1);</li><li>quem entrega a página não é a NBA, e sim uma empresa de entrega de conteúdo, a <strong>Akamai</strong>, com um servidor perto de nós (tópicos 1 e 3);</li><li>o servidor <strong>recusa</strong> o pedido de um programa que não parece navegador (tópico 4);</li><li>ele só aceita conversa <strong>com cadeado</strong> (HTTPS) e tem um certificado que dá para examinar (tópico 4).</li></ul>
+<p><strong>Por que começar pelo endereço IP?</strong> Porque é a primeira coisa de que o computador precisa.</p>
+<ul><li>Na internet, cada computador é encontrado por um número, o <strong>endereço IP</strong> (por exemplo, <code>23.201.217.31</code>). Ele funciona como o endereço de uma casa: sem ele, o carteiro não sabe para onde levar a carta.</li><li>Nós lembramos <strong>nomes</strong> (<code>www.nba.com</code>), mas a rede só entende <strong>números</strong>. Então, antes de qualquer outra coisa, o computador precisa descobrir: "qual é o número de <code>www.nba.com</code>?".</li><li>Por isso a viagem começa pelo <strong>DNS</strong>, o serviço que traduz o nome no número. Sem o IP, nada do resto acontece: não há com quem abrir a conversa nem caminho a seguir.</li></ul>
+<p><strong>As 5 paradas da viagem.</strong> Cada parada usa o que a anterior entregou: o DNS entrega o IP; o TCP/IP usa esse IP para abrir a conversa; os roteadores levam os pacotes até lá; o HTTP faz o pedido dentro dessa conversa; e, no fim, trocamos de lado e viramos o servidor.</p>
+<table>
+<tr><th>#</th><th>Parada</th><th>A pergunta que ela responde</th><th>Analogia</th></tr>
+<tr><td>1</td><td>DNS</td><td>Qual é o <strong>endereço</strong> do site?</td><td>procurar o número na agenda do celular</td></tr>
+<tr><td>2</td><td>TCP/IP</td><td>Como o meu computador <strong>abre uma conversa</strong> com o servidor?</td><td>ligar e ouvir "alô" do outro lado</td></tr>
+<tr><td>3</td><td>Roteadores</td><td>Por onde os dados <strong>passam</strong> até chegar lá?</td><td>um GPS que só conhece o próximo cruzamento</td></tr>
+<tr><td>4</td><td>HTTP e HTTPS</td><td>O que eu <strong>peço</strong> ao servidor, e como evitar que alguém no caminho leia?</td><td>o pedido no balcão, dentro de um envelope lacrado</td></tr>
+<tr><td>5</td><td>Cliente-servidor</td><td><strong>Quem pede</strong> e <strong>quem responde</strong>?</td><td>o cliente e o atendente</td></tr>
+</table></section>
+<section id="linux-do-zero"><h2>Linux do zero</h2>
+<blockquote><p>Para os primeiros minutos da aula. Estas ideias aparecem em quase todos os comandos do roteiro.</p></blockquote>
+<h3 id="ldz-1">O terminal e o prompt</h3>
+<p>O <strong>terminal</strong> é uma janela onde se conversa com o computador por texto: você digita um comando, aperta <code>Enter</code> e lê a resposta. Dentro do contêiner, cada linha começa com o <strong>prompt</strong>, algo assim:</p>
+<pre><code>root@52ddc9cccaf3:/workspace#</code></pre>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>root</code></td><td>o <strong>usuário</strong> logado. <code>root</code> é o administrador, que pode fazer tudo</td></tr>
+<tr><td><code>@52ddc9cccaf3</code></td><td>o <strong>nome da máquina</strong>. No Docker, é o código (ID) do contêiner</td></tr>
+<tr><td><code>:/workspace</code></td><td>a <strong>pasta</strong> em que você está agora</td></tr>
+<tr><td><code>#</code></td><td>"pode digitar". <code>#</code> indica administrador; um usuário comum vê <code>$</code></td></tr>
+</table>
+<p>Neste roteiro, os blocos de comando mostram só o que se digita, sem o prompt.</p>
+<h3 id="ldz-2">Como ler um comando</h3>
+<pre><code>ping   -c 4   www.nba.com
+│      │      │
+│      │      └─ argumento: SOBRE O QUE o comando age
+│      └─ opção (ou flag): COMO ele deve agir. Começa com - ou --
+└─ comando: O QUE fazer (o nome de um programa)</code></pre>
+<ul><li>Opções curtas têm um traço e uma letra (<code>-c</code>). Várias podem ser juntadas: <code>-zv</code> é o mesmo que <code>-z -v</code>. Opções longas têm dois traços e uma palavra (<code>--build</code>).</li><li>Algumas opções recebem um valor logo depois: em <code>-c 4</code>, o <code>4</code> pertence ao <code>-c</code>.</li><li><strong>Maiúsculas e minúsculas são diferentes.</strong> <code>curl -I</code> e <code>curl -i</code> fazem coisas diferentes.</li><li>O espaço separa as partes. Se um valor tem espaços ou símbolos, vai entre aspas: <code>"Mozilla/5.0"</code>.</li><li>Em arquivos de configuração, linhas que começam com <code>#</code> são <strong>comentários</strong>: o sistema ignora.</li></ul>
+<h3 id="ldz-3">As pastas do Linux</h3>
+<p>No Linux não existe <code>C:\</code>. Tudo começa numa única pasta, a <strong>raiz</strong>, escrita <code>/</code>, e as outras pastas ficam dentro dela.</p>
+<table>
+<tr><th>Pasta</th><th>O que guarda</th><th>Onde aparece no roteiro</th></tr>
+<tr><td><code>/</code></td><td>a raiz: contém todas as outras pastas</td><td>—</td></tr>
+<tr><td><code>/etc</code></td><td>as <strong>configurações</strong> do sistema e dos programas, em arquivos de texto</td><td><code>/etc/resolv.conf</code> (tópico 1)</td></tr>
+<tr><td><code>/var/log</code></td><td>os <strong>registros (logs)</strong>: o "diário" do que acontece na máquina</td><td><code>/var/log/acesso.log</code> (parte 2)</td></tr>
+<tr><td><code>/usr/bin</code></td><td>os <strong>programas</strong> instalados: <code>ping</code>, <code>curl</code>, <code>dig</code>… são arquivos aqui</td><td>—</td></tr>
+<tr><td><code>/root</code></td><td>a pasta pessoal do usuário <code>root</code></td><td>—</td></tr>
+<tr><td><code>/workspace</code></td><td>criada <strong>para a aula</strong>: é a pasta do projeto no seu computador, compartilhada com o contêiner</td><td><code>/workspace/aula-3/pratica/meu-site</code> (tópico 5)</td></tr>
+</table>
+<ul><li>Um caminho se lê da esquerda para a direita: <code>/workspace/aula-3/pratica</code> = "na raiz, entre em <code>workspace</code>, depois em <code>aula-3</code>, depois em <code>pratica</code>".</li><li>Caminho que começa com <code>/</code> é <strong>absoluto</strong>: vale de qualquer lugar. Sem a <code>/</code> no começo, é <strong>relativo</strong> à pasta onde você está.</li></ul>
+<h3 id="ldz-4">Atalhos e comandos de sobrevivência</h3>
+<table>
+<tr><th>Tecla ou comando</th><th>O que faz</th></tr>
+<tr><td><code>Ctrl+C</code></td><td><strong>interrompe</strong> o comando que está rodando (um <code>ping</code> sem fim, um servidor, o <code>nc</code>…)</td></tr>
+<tr><td><code>↑</code> e <code>↓</code></td><td>navegam pelos comandos já digitados</td></tr>
+<tr><td><code>Tab</code></td><td>completa nomes de comandos, pastas e arquivos</td></tr>
+<tr><td><code>clear</code> ou <code>Ctrl+L</code></td><td>limpa a tela</td></tr>
+<tr><td><code>pwd</code></td><td>mostra em que pasta você está (<em>print working directory</em>)</td></tr>
+<tr><td><code>ls</code></td><td>lista os arquivos da pasta (<em>list</em>)</td></tr>
+<tr><td><code>man comando</code></td><td>abre o manual do comando; sai com <code>q</code></td></tr>
+<tr><td><code>exit</code></td><td>sai do contêiner e volta ao terminal do seu computador</td></tr>
+</table></section>
+<section id="p1-antes"><h2>Preparação: subir o Kali</h2>
+<ul><li>O <code>Dockerfile</code> precisa estar atualizado (ele já tem <code>whois</code>, <code>netcat-openbsd</code> e <code>mtr-tiny</code>). No computador, fora do contêiner:
+<pre class="cmd"><code>docker compose up -d --build
+docker exec -it linux bash</code></pre></li><li>Deixe <strong>dois terminais</strong> dentro do contêiner (<code>docker exec -it linux bash</code> em cada um). Os tópicos 2 e 5 usam os dois.</li><li>Deixe o navegador aberto em <a href="https://www.submarinecablemap.com/" target="_blank" rel="noopener">submarinecablemap.com</a> para a abertura.</li><li><strong>Os números vão variar.</strong> As saídas abaixo são reais, de um teste no contêiner da aula em 19/10/2026. IPs, tempos e saltos mudam conforme a rede de cada aluno e o horário.</li></ul>
+<p class="explica"><strong>🔍 Entendendo os comandos de preparação</strong></p>
+<p><strong>Docker em uma frase:</strong> é um programa que roda "mini computadores" isolados, os <strong>contêineres</strong>, dentro do seu computador. O nosso contêiner é um Kali Linux com todas as ferramentas da aula já instaladas. Se algo der errado, basta apagá-lo e criar de novo.</p>
+<p><code>docker compose up -d --build</code></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>docker</code></td><td>o programa que gerencia os contêineres</td></tr>
+<tr><td><code>compose</code></td><td>lê o arquivo <code>docker-compose.yml</code> da pasta: a "receita" de quais contêineres subir e como</td></tr>
+<tr><td><code>up</code></td><td>"suba": cria e liga os contêineres da receita</td></tr>
+<tr><td><code>-d</code></td><td><em>detached</em> (desacoplado): roda em segundo plano e devolve o terminal</td></tr>
+<tr><td><code>--build</code></td><td>antes de subir, monta ou atualiza a <strong>imagem</strong> a partir do <code>Dockerfile</code>. A imagem é o molde; o contêiner é a máquina criada a partir dele</td></tr>
+</table>
+<p><code>docker exec -it linux bash</code></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>exec</code></td><td>executa um comando <strong>dentro</strong> de um contêiner que já está ligado</td></tr>
+<tr><td><code>-it</code></td><td><code>-i</code> (<em>interactive</em>) mantém o teclado ligado ao contêiner; <code>-t</code> (<em>tty</em>) cria um terminal de verdade. Juntos: "quero digitar lá dentro"</td></tr>
+<tr><td><code>linux</code></td><td>o <strong>nome</strong> do contêiner, definido no <code>docker-compose.yml</code></td></tr>
+<tr><td><code>bash</code></td><td>o programa que vai abrir lá dentro: o <strong>shell</strong>, que lê o que você digita e executa</td></tr>
+</table>
+<p>Depois desse comando, o <a href="#linux-do-zero">prompt</a> muda: tudo o que for digitado roda <strong>no Kali</strong>, e não no seu computador. Para voltar, <code>exit</code>.</p></section>
+<section id="t1"><h2>Tópico 1 — DNS</h2>
+<div class="oque" id="t1-oque"><h3>O que é DNS?</h3>
+<p><strong>Onde estamos na viagem:</strong> você digitou <code>www.nba.com</code> e apertou Enter. Antes de qualquer coisa, o computador precisa do <strong>endereço IP</strong> do site, porque é por número que os computadores se encontram.</p>
+<p><strong>O que é.</strong> O <strong>DNS</strong> (<em>Domain Name System</em>, sistema de nomes de domínio) é a "agenda de contatos" da internet. No celular, você guarda o contato pelo nome ("Mãe") e o aparelho disca o número. Na internet, você digita o nome (<code>www.nba.com</code>) e o DNS devolve o número (<code>23.201.217.31</code>).</p>
+<p><strong>Como funciona, em uma frase:</strong> o seu computador pergunta a um servidor DNS "qual é o IP de <code>www.nba.com</code>?", e ele responde. Se não souber, ele mesmo pergunta a outros servidores, em etapas (é o que o <code>dig +trace</code> mostra no passo 7).</p>
+<p><strong>Palavras que vão aparecer:</strong></p>
+<ul><li><strong>domínio:</strong> o nome de um site (<code>nba.com</code>). Lê-se da direita para a esquerda: <code>.com</code> → <code>nba</code> → <code>www</code>.</li><li><strong>servidor DNS (resolvedor):</strong> o computador que responde às perguntas de nome. O seu está anotado no arquivo <code>/etc/resolv.conf</code> (passo 1).</li><li><strong>registro:</strong> cada informação guardada no DNS, como <code>A</code> (o endereço IPv4) ou <code>CNAME</code> (um apelido). Ver o slide 1.3.</li><li><strong>cache:</strong> a memória das respostas recentes, para não perguntar de novo a cada clique.</li></ul>
+<p><strong>Por que importa para segurança:</strong> se alguém consegue fazer o DNS responder errado, você vai para o endereço errado achando que está no certo. É a base de vários golpes.</p></div>
+<p class="desafio"><strong>Desafio:</strong> <strong>Descubra o endereço IP do <code>www.nba.com</code> e quem respondeu a sua pergunta.</strong></p>
+<section class="passo" id="t1-p1"><h3>Passo 1 — Quem é o meu servidor DNS?</h3>
+<pre class="cmd"><code>cat /etc/resolv.conf</code></pre>
+<p>Saída (as linhas que começam com <code>#</code> são comentários do Docker):</p>
+<pre><code>nameserver 127.0.0.11
+options ndots:0</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>cat</code></td><td>vem de <em>concatenate</em> (juntar arquivos). Lê um arquivo e <strong>mostra o conteúdo na tela</strong>. É o jeito mais rápido de ler um arquivo de texto, sem abrir um editor e sem risco de alterá-lo</td></tr>
+<tr><td><code>/etc/resolv.conf</code></td><td>o <strong>caminho</strong> do arquivo: dentro da pasta <code>/etc</code>, o arquivo <code>resolv.conf</code></td></tr>
+</table>
+<p><strong>Para que serve a pasta <code>/etc</code>?</strong> É onde ficam as <strong>configurações</strong> do sistema e dos programas. Quando se quer mudar como o Linux se comporta, quase sempre a resposta está num arquivo de <code>/etc</code>. Só o administrador (<code>root</code>) pode alterá-los.</p>
+<p><strong>Que tipos de arquivo há lá?</strong> Quase todos são <strong>arquivos de texto simples</strong>, que se leem com <code>cat</code> e se editam com <code>vim</code> ou <code>nano</code>. Muitos terminam em <code>.conf</code>; outros não têm extensão (no Linux, a extensão é só parte do nome). Programas maiores ganham uma subpasta própria, como <code>/etc/ssh/</code> e <code>/etc/apt/</code>. Exemplos:</p>
+<table>
+<tr><th>Arquivo</th><th>O que guarda</th></tr>
+<tr><td><code>/etc/hostname</code></td><td>o nome da máquina</td></tr>
+<tr><td><code>/etc/hosts</code></td><td>uma "agenda" local de nomes → IPs, consultada antes do DNS</td></tr>
+<tr><td><code>/etc/resolv.conf</code></td><td>quem é o servidor DNS (este passo)</td></tr>
+<tr><td><code>/etc/services</code></td><td>a lista de portas conhecidas (<code>443</code> = <code>https</code>), usada no tópico 2</td></tr>
+<tr><td><code>/etc/passwd</code></td><td>a lista de usuários (as senhas, embaralhadas, ficam em <code>/etc/shadow</code>)</td></tr>
+<tr><td><code>/etc/os-release</code></td><td>qual é o sistema. Experimente: <code>cat /etc/os-release</code></td></tr>
+</table>
+<p><strong>O que o <code>resolv.conf</code> guarda?</strong> A quem o computador deve perguntar para <strong>resolver nomes</strong> (daí o nome, de <em>resolver</em>). A linha principal é <code>nameserver IP</code>: o servidor DNS. Pode haver mais de uma (se o primeiro não responde, o sistema tenta o próximo), além de linhas <code>search</code> (domínio completado automaticamente) e <code>options</code> (ajustes).</p>
+<p><strong>Por que precisamos dele?</strong> Todo programa que recebe um nome (<code>ping www.nba.com</code>, <code>curl</code>, o navegador) precisa trocá-lo por um IP antes de qualquer coisa. É neste arquivo que o sistema descobre <strong>a quem perguntar</strong>. Sem ele, só funcionariam endereços IP digitados à mão. Também é um ponto sensível: quem altera o <code>resolv.conf</code> de uma máquina escolhe quem responde às perguntas DNS dela, e pode mandá-la para sites falsos.</p>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Linha</th><th>O que significa</th></tr>
+<tr><td><code>nameserver 127.0.0.11</code></td><td>o DNS que o contêiner usa é um <strong>DNS interno do Docker</strong>. Ele repassa as perguntas para o DNS do seu computador, que repassa para o do roteador ou do provedor. Todo IP que começa com <code>127</code> é a própria máquina (aqui, o próprio contêiner)</td></tr>
+<tr><td><code>options ndots:0</code></td><td>ajuste do Docker: o nome é buscado do jeito que foi digitado, sem antes tentar completá-lo com outro domínio. Pode ignorar</td></tr>
+<tr><td>linhas com <code>#</code></td><td>comentários: o Docker avisa que gerou o arquivo automaticamente</td></tr>
+</table></section>
+<section class="passo" id="t1-p2"><h3>Passo 2 — A pergunta mais simples: <code>host</code></h3>
+<pre class="cmd"><code>host www.nba.com</code></pre>
+<pre><code>www.nba.com is an alias for www.nba.com-v1.edgekey.net.
+www.nba.com-v1.edgekey.net is an alias for e8017.dscb.akamaiedge.net.
+e8017.dscb.akamaiedge.net has address 23.201.217.31
+e8017.dscb.akamaiedge.net has IPv6 address 2600:1419:4e00:98d::1f51
+e8017.dscb.akamaiedge.net has IPv6 address 2600:1419:4e00:989::1f51</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>host</code></td><td>faz uma pergunta DNS e responde em frases simples. Por padrão, pergunta o IPv4, o IPv6 e o servidor de e-mail do nome</td></tr>
+<tr><td><code>www.nba.com</code></td><td>o <strong>nome</strong> a traduzir. Lê-se da direita para a esquerda: <code>com</code> é o final (o <em>domínio de topo</em>), <code>nba</code> é o domínio da empresa e <code>www</code> é um nome dentro dele, por tradição o do site</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Linha</th><th>O que significa</th></tr>
+<tr><td><code>www.nba.com is an alias for www.nba.com-v1.edgekey.net.</code></td><td>1º apelido (CNAME): o www.nba.com "aponta" para um nome da <strong>Akamai</strong> (<code>edgekey.net</code>)</td></tr>
+<tr><td><code>… is an alias for e8017.dscb.akamaiedge.net.</code></td><td>2º apelido: outro nome da Akamai</td></tr>
+<tr><td><code>… has address 23.201.217.31</code></td><td>o <strong>endereço IPv4</strong> final (registro A)</td></tr>
+<tr><td><code>… has IPv6 address …</code></td><td>dois <strong>endereços IPv6</strong> (registro AAAA)</td></tr>
+</table>
+<p><strong>Por que tantos apelidos?</strong> A <strong>Akamai</strong> é uma <strong>CDN</strong>: uma empresa com servidores espalhados pelo mundo que guardam cópias de sites. A NBA não entrega a página do servidor dela; quem entrega é um servidor da Akamai perto de você.</p></section>
+<section class="passo" id="t1-p3"><h3>Passo 3 — A mesma pergunta com <code>nslookup</code></h3>
+<pre class="cmd"><code>nslookup www.nba.com</code></pre>
+<pre><code>Server:		127.0.0.11
+Address:	127.0.0.11#53
+
+Non-authoritative answer:
+www.nba.com	canonical name = www.nba.com-v1.edgekey.net.
+www.nba.com-v1.edgekey.net	canonical name = e8017.dscb.akamaiedge.net.
+Name:	e8017.dscb.akamaiedge.net
+Address: 23.201.217.31
+Name:	e8017.dscb.akamaiedge.net
+Address: 2600:1419:4e00:98d::1f51
+Name:	e8017.dscb.akamaiedge.net
+Address: 2600:1419:4e00:989::1f51</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>nslookup</code></td><td><em>name server lookup</em>, "consulta ao servidor de nomes". Faz a mesma pergunta que o <code>host</code>, mas mostra também <strong>quem respondeu</strong></td></tr>
+<tr><td><code>www.nba.com</code></td><td>o nome a traduzir</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Trecho</th><th>O que significa</th></tr>
+<tr><td><code>Server: 127.0.0.11</code> / <code>Address: 127.0.0.11#53</code></td><td><strong>quem respondeu</strong>: o DNS do Docker (o mesmo do <code>/etc/resolv.conf</code>), na <strong>porta 53</strong>, a porta do DNS. O <code>#</code> separa o IP da porta</td></tr>
+<tr><td><code>Non-authoritative answer</code></td><td>"resposta não oficial": veio de um <strong>cache</strong>, e não direto do servidor da NBA. É normal</td></tr>
+<tr><td><code>canonical name =</code></td><td>o mesmo que <em>alias</em>: um apelido (CNAME)</td></tr>
+<tr><td><code>Name</code> / <code>Address</code></td><td>o nome final e cada endereço</td></tr>
+</table>
+<p>O <code>nslookup</code> também existe no <strong>Windows</strong> e no <strong>Mac</strong>: a turma pode repetir o comando fora do Kali.</p></section>
+<section class="passo" id="t1-p4"><h3>Passo 4 — A ferramenta de investigação: <code>dig</code></h3>
+<pre class="cmd"><code>dig www.nba.com</code></pre>
+<pre><code>; &lt;&lt;&gt;&gt; DiG 9.20.29-1-Debian &lt;&lt;&gt;&gt; www.nba.com
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 48276
+;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.nba.com.			IN	A
+
+;; ANSWER SECTION:
+www.nba.com.		230	IN	CNAME	www.nba.com-v1.edgekey.net.
+www.nba.com-v1.edgekey.net. 4502 IN	CNAME	e8017.dscb.akamaiedge.net.
+e8017.dscb.akamaiedge.net. 27	IN	A	23.201.217.31
+
+;; Query time: 4 msec
+;; SERVER: 127.0.0.11#53(127.0.0.11) (UDP)
+;; WHEN: Mon Oct 19 16:38:07 UTC 2026
+;; MSG SIZE  rcvd: 121</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>dig</code></td><td><em>Domain Information Groper</em>, algo como "vasculhador de informações de domínio". É a ferramenta preferida de quem trabalha com redes e segurança: mostra a resposta DNS <strong>inteira</strong>, sem resumir</td></tr>
+<tr><td><code>www.nba.com</code></td><td>o nome. Sem indicar o tipo, o <code>dig</code> pergunta o tipo <strong>A</strong> (o endereço IPv4)</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída.</strong> Leia com a turma, bloco por bloco. Toda linha que começa com <code>;</code> é um comentário do <code>dig</code>: informação para quem lê, e não parte da resposta.</p>
+<p><strong>Cabeçalho</strong></p>
+<table>
+<tr><th>Trecho</th><th>O que significa</th></tr>
+<tr><td><code>; &lt;&lt;&gt;&gt; DiG 9.20.29-1-Debian &lt;&lt;&gt;&gt; www.nba.com</code></td><td>a versão do programa e o comando que foi rodado</td></tr>
+<tr><td><code>global options: +cmd</code></td><td>a opção padrão que manda imprimir a linha acima. Pode ignorar</td></tr>
+<tr><td><code>Got answer:</code></td><td>chegou uma resposta</td></tr>
+<tr><td><code>opcode: QUERY</code></td><td>o tipo de operação: uma consulta comum</td></tr>
+<tr><td><code>status: NOERROR</code></td><td><strong>deu certo</strong>. Se o nome não existisse, apareceria <code>NXDOMAIN</code></td></tr>
+<tr><td><code>id: 48276</code></td><td>um número sorteado para a pergunta. A resposta volta com o mesmo número, e assim o cliente sabe que ela é a resposta certa</td></tr>
+<tr><td><code>flags: qr rd ra</code></td><td><code>qr</code> (<em>query response</em>) = é uma resposta; <code>rd</code> (<em>recursion desired</em>) = pedimos a busca completa; <code>ra</code> (<em>recursion available</em>) = o servidor aceita fazê-la</td></tr>
+<tr><td><code>QUERY: 1, ANSWER: 3</code></td><td>fizemos 1 pergunta e recebemos 3 respostas</td></tr>
+<tr><td><code>AUTHORITY: 0, ADDITIONAL: 0</code></td><td>duas seções extras que a resposta poderia trazer (servidores responsáveis e informações adicionais). Vazias aqui</td></tr>
+</table>
+<p><strong>QUESTION SECTION</strong>, a pergunta que fizemos:</p>
+<ul><li><code>www.nba.com. IN A</code> = "qual é o endereço IPv4 (<strong>A</strong>) de <code>www.nba.com</code>?". O ponto no final do nome representa a <strong>raiz</strong> do DNS.</li><li><code>IN</code> = classe <em>Internet</em>. Aparece em toda linha e é sempre igual: vem da época em que o DNS também servia a outras redes.</li></ul>
+<p><strong>ANSWER SECTION</strong>, a resposta. Cada linha segue o formato <code>nome  TTL  IN  tipo  valor</code>. O <strong>TTL</strong> (<em>time to live</em>) é por quantos segundos a resposta ainda pode ficar guardada em cache; quando zera, o resolvedor pergunta de novo:</p>
+<table>
+<tr><th>Linha</th><th>TTL</th><th>Tipo</th><th>Leitura</th></tr>
+<tr><td><code>www.nba.com.</code></td><td>230</td><td>CNAME</td><td>apelido para <code>www.nba.com-v1.edgekey.net</code>, guardado em cache por até 230 segundos</td></tr>
+<tr><td><code>www.nba.com-v1.edgekey.net.</code></td><td>4502</td><td>CNAME</td><td>apelido para <code>e8017.dscb.akamaiedge.net</code></td></tr>
+<tr><td><code>e8017.dscb.akamaiedge.net.</code></td><td>27</td><td>A</td><td><strong>o IP: <code>23.201.217.31</code></strong></td></tr>
+</table>
+<p><strong>Rodapé</strong></p>
+<table>
+<tr><th>Trecho</th><th>O que significa</th></tr>
+<tr><td><code>Query time: 4 msec</code></td><td>a resposta levou 4 milissegundos (rápido, porque veio de cache)</td></tr>
+<tr><td><code>SERVER: 127.0.0.11#53 (UDP)</code></td><td>quem respondeu, em qual porta (53) e por qual protocolo (UDP). O <strong>UDP</strong> é um "primo" do TCP (tópico 2) sem aperto de mão: manda a pergunta e pronto. Serve bem para perguntas curtas, como as do DNS</td></tr>
+<tr><td><code>WHEN: Mon Oct 19 16:38:07 UTC 2026</code></td><td>quando a consulta foi feita, em <strong>UTC</strong> (horário universal: 3 horas a mais que o de Brasília)</td></tr>
+<tr><td><code>MSG SIZE rcvd: 121</code></td><td>o tamanho da resposta, em bytes</td></tr>
+</table></section>
+<section class="passo" id="t1-p5"><h3>Passo 5 — Só a resposta: <code>dig +short</code></h3>
+<pre class="cmd"><code>dig +short www.nba.com</code></pre>
+<pre><code>www.nba.com-v1.edgekey.net.
+e8017.dscb.akamaiedge.net.
+23.201.217.31</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>+short</code></td><td>"resposta curta": tira o cabeçalho, as seções e o rodapé, e deixa só os valores: os dois apelidos e o IP. No <code>dig</code>, as opções que mudam a forma da pergunta ou da resposta começam com <code>+</code>, e não com <code>-</code></td></tr>
+</table>
+<p>E o IPv6?</p>
+<pre class="cmd"><code>dig +short AAAA www.nba.com</code></pre>
+<pre><code>www.nba.com-v1.edgekey.net.
+e8017.dscb.akamaiedge.net.
+2600:1419:4e00:98d::1f51
+2600:1419:4e00:989::1f51</code></pre>
+<p>Colocar o <strong>tipo</strong> antes do nome (<code>AAAA</code>) muda a pergunta: agora queremos o endereço IPv6. <code>AAAA</code> é o tipo de registro do IPv6 (slide 1.3). São quatro letras A porque o endereço IPv6 é quatro vezes maior que o IPv4: 128 bits contra 32. Sem tipo, o padrão é <code>A</code>.</p></section>
+<section class="passo" id="t1-p6"><h3>Passo 6 — Perguntar a outro servidor DNS</h3>
+<pre class="cmd"><code>dig +short www.nba.com @8.8.8.8
+dig +short www.nba.com @1.1.1.1</code></pre>
+<pre><code>www.nba.com-v1.edgekey.net.
+e8017.dscb.akamaiedge.net.
+23.201.217.31</code></pre>
+<p>(a mesma resposta nos dois)</p>
+<ul><li>O <code>@</code> escolhe <strong>a quem perguntar</strong>, passando por cima do <code>nameserver</code> do <code>/etc/resolv.conf</code>. <code>8.8.8.8</code> é o DNS público do Google; <code>1.1.1.1</code>, o da Cloudflare. Qualquer pessoa pode usá-los, e os números foram escolhidos para serem fáceis de lembrar.</li><li>São dois comandos: cada linha do bloco é um comando separado. Para o <code>dig</code>, a ordem das partes não importa: <code>dig @8.8.8.8 +short www.nba.com</code> dá o mesmo resultado.</li><li><strong>Uso prático:</strong> se o seu DNS não responde e o <code>@8.8.8.8</code> responde, o problema está no seu DNS, e não no site.</li></ul></section>
+<section class="passo" id="t1-p7"><h3>Passo 7 — Novo: ver a viagem inteira com <code>dig +trace</code></h3>
+<pre class="cmd"><code>dig +trace +nodnssec www.nba.com</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>+trace</code></td><td>"rastrear": em vez de deixar o resolvedor do Docker fazer a busca, o próprio <code>dig</code> faz o caminho completo do slide 1.2, a partir da raiz, e mostra cada etapa</td></tr>
+<tr><td><code>+nodnssec</code></td><td>esconde as assinaturas do <strong>DNSSEC</strong>, uma extensão que assina digitalmente as respostas do DNS para provar que não foram falsificadas. As assinaturas são linhas longas que poluem a tela</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída.</strong> São 4 blocos. Em todos, o tipo <strong>NS</strong> (<em>name server</em>) quer dizer "quem responde por este pedaço do nome". A última linha de cada bloco (<code>;; Received … bytes from … in … ms</code>) diz o tamanho da resposta, <strong>quem respondeu</strong> e quanto tempo levou.</p>
+<pre><code>.			4502	IN	NS	a.root-servers.net.
+.			4502	IN	NS	b.root-servers.net.
+… (13 servidores, de a até m)
+;; Received 228 bytes from 127.0.0.11#53(127.0.0.11) in 21 ms</code></pre>
+<p><strong>Bloco 1, a raiz (<code>.</code>):</strong> o DNS do Docker informa quem são os 13 servidores raiz da internet. São 13 nomes (de <code>a</code> a <code>m</code>), mas cada um tem várias cópias espalhadas pelo mundo, mais de mil no total (veja o mapa em <a href="https://root-servers.org/" target="_blank" rel="noopener">root-servers.org</a>).</p>
+<pre><code>com.			172800	IN	NS	a.gtld-servers.net.
+… (13 servidores)
+;; Received 864 bytes from 192.112.36.4#53(g.root-servers.net) in 155 ms</code></pre>
+<p><strong>Bloco 2, o <code>.com</code>:</strong> perguntamos a um servidor raiz (<code>g.root-servers.net</code>). Ele não sabe o IP da NBA, mas sabe quem cuida do <code>.com</code>. Os servidores do <code>.com</code> se chamam <code>gtld-servers</code> (<em>gTLD</em> = domínio de topo genérico, como <code>.com</code>, <code>.net</code> e <code>.org</code>). O número <code>172800</code> é o TTL: 172.800 segundos, ou <strong>2 dias</strong>. Essa informação quase nunca muda, então pode ficar muito tempo em cache.</p>
+<pre><code>nba.com.		172800	IN	NS	a1-148.akam.net.
+nba.com.		172800	IN	NS	a7-67.akam.net.
+… (6 servidores)
+;; Received 172 bytes from 192.31.80.30#53(d.gtld-servers.net) in 204 ms</code></pre>
+<p><strong>Bloco 3, o <code>nba.com</code>:</strong> o servidor do <code>.com</code> diz quem responde pelo <code>nba.com</code>. São servidores da Akamai (<code>akam.net</code>): a NBA também terceiriza o DNS.</p>
+<pre><code>www.nba.com.		300	IN	CNAME	www.nba.com-v1.edgekey.net.
+;; Received 80 bytes from 23.211.132.64#53(a16-64.akam.net) in 7 ms</code></pre>
+<p><strong>Bloco 4, a resposta:</strong> o servidor do <code>nba.com</code> responde com o primeiro apelido. A partir daí, a busca continua pelos nomes da Akamai. Repare no TTL: <strong>300</strong> segundos (5 minutos), direto da fonte. No passo 4 apareceu <strong>230</strong> porque aquela resposta veio de um cache, que vai descontando o tempo: faltavam 230 dos 300 segundos.</p>
+<p><strong>Analogia:</strong> é como pedir informação na rua. A raiz diz "não sei a casa, mas o bairro <code>.com</code> é por ali". O <code>.com</code> diz "o prédio da NBA é aquele". E a portaria da NBA responde.</p></section>
+</section>
+<section id="t2"><h2>Tópico 2 — TCP/IP</h2>
+<div class="oque" id="t2-oque"><h3>O que é TCP/IP?</h3>
+<p><strong>Onde estamos na viagem:</strong> o DNS já nos deu o IP da NBA (<code>23.201.217.31</code>). Agora o computador precisa <strong>conversar</strong> com esse endereço.</p>
+<p><strong>O que é.</strong> <strong>TCP/IP</strong> é o nome do conjunto de regras (os <strong>protocolos</strong>) que todos os computadores da internet seguem para trocar dados. Protocolo é um combinado: "eu falo assim, você responde assado". As duas regras principais dão o nome:</p>
+<ul><li><strong>IP</strong> (<em>Internet Protocol</em>): dá um <strong>endereço</strong> a cada computador e leva cada pedaço de dado até o endereço certo. É o envelope, com remetente e destinatário.</li><li><strong>TCP</strong> (<em>Transmission Control Protocol</em>): abre uma <strong>conversa confiável</strong> entre dois programas. Confere se tudo chegou, na ordem certa, e reenvia o que se perdeu. É como uma ligação telefônica: primeiro alguém atende, depois se conversa.</li></ul>
+<p><strong>Pacotes.</strong> Nada viaja inteiro: os dados são picotados em <strong>pacotes</strong>, pequenos pedaços que levam o IP de origem e o de destino. Do outro lado, o TCP remonta tudo.</p>
+<p><strong>Portas.</strong> Um computador roda vários programas de rede ao mesmo tempo. A <strong>porta</strong> é o número que diz <strong>qual programa</strong> deve receber o pacote: o IP é o prédio; a porta é o apartamento. O site da NBA atende na porta <strong>443</strong> (HTTPS).</p>
+<p><strong>Por que importa para segurança:</strong> toda conversa tem 4 números: o seu IP e a sua porta, o IP e a porta do outro lado. Saber lê-los (com o <code>ss</code>, no passo 4) é saber <strong>com quem uma máquina está falando</strong>.</p></div>
+<p class="desafio"><strong>Desafio:</strong> <strong>Prove que o seu Kali consegue abrir uma conversa TCP com o servidor da NBA e mostre essa conversa acontecendo: de qual IP e porta ela sai, e a qual IP e porta ela chega.</strong></p>
+<section class="passo" id="t2-p1"><h3>Passo 1 — Qual é o meu IP?</h3>
+<pre class="cmd"><code>hostname -I</code></pre>
+<pre><code>172.23.0.2</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>hostname</code></td><td>sozinho, mostra o <strong>nome</strong> da máquina (no contêiner, o mesmo código que aparece no prompt)</td></tr>
+<tr><td><code>-I</code></td><td>(i <strong>maiúsculo</strong>) mostra todos os <strong>IPs</strong> da máquina, menos o de <em>loopback</em> (<code>127.0.0.1</code>). Com <code>-i</code> minúsculo, o resultado é outro</td></tr>
+</table>
+<p>O IP do contêiner na rede que o Docker criou. É um <strong>IP privado</strong>: só vale dentro dessa rede. As faixas privadas são <code>10.x.x.x</code>, de <code>172.16.x.x</code> a <code>172.31.x.x</code> e <code>192.168.x.x</code>. Elas se repetem em milhões de casas e empresas; para sair para a internet, o roteador troca o IP privado por um <strong>IP público</strong> (é o <em>NAT</em>).</p>
+<pre class="cmd"><code>ip -br a</code></pre>
+<pre><code>lo               UNKNOWN        127.0.0.1/8 ::1/128
+tunl0@NONE       DOWN
+gre0@NONE        DOWN
+…
+eth0@if59        UP             172.23.0.2/16</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>ip</code></td><td>o comando de rede do Linux: endereços, rotas e vizinhos (tópico 3)</td></tr>
+<tr><td><code>-br</code></td><td><em>brief</em> (resumido): uma placa de rede por linha</td></tr>
+<tr><td><code>a</code></td><td><em>address</em>: mostre os endereços. O <code>ip</code> aceita abreviações: <code>ip -br a</code> = <code>ip -brief address</code></td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Coluna</th><th>O que significa</th></tr>
+<tr><td>1ª: o nome da placa de rede</td><td><code>lo</code> = a máquina falando com ela mesma (<em>loopback</em>); <code>eth0</code> = a placa que fala com o mundo</td></tr>
+<tr><td>2ª: o estado</td><td><code>UP</code> = ligada; <code>DOWN</code> = desligada</td></tr>
+<tr><td>3ª: os endereços</td><td><code>172.23.0.2/16</code> = o IP e o tamanho da rede (<code>/16</code> = 65.536 endereços)</td></tr>
+</table>
+<ul><li><code>lo</code> aparece como <code>UNKNOWN</code> porque o <em>loopback</em> não tem cabo nem sinal para medir. É normal.</li><li><code>127.0.0.1/8</code> e <code>::1/128</code> são os endereços de <em>loopback</em> em IPv4 e IPv6: "eu mesmo".</li><li><code>eth0@if59</code>: o <code>eth0</code> do contêiner é uma ponta de um "cabo virtual"; a outra ponta fica no Docker, na interface número 59. Pode ignorar o <code>@if59</code>.</li><li><strong>O que é o <code>/16</code>?</strong> Diz quantos <strong>bits</strong> do IP identificam a rede. Um IPv4 tem 32 bits, escritos como 4 números de 8 bits. <code>/16</code> = os 2 primeiros números (<code>172.23</code>) são a rede, e os 2 últimos ficam livres para as máquinas: 256 × 256 = 65.536 endereços. Já o <code>/8</code> do <code>lo</code> = só o primeiro número é a rede: tudo que começa com <code>127</code> é a própria máquina.</li><li><code>tunl0</code>, <code>gre0</code>, <code>sit0</code>… com <code>DOWN</code> são interfaces virtuais do Docker Desktop, desligadas. Pode ignorar.</li></ul></section>
+<section class="passo" id="t2-p2"><h3>Passo 2 — O servidor da NBA está vivo? <code>ping</code></h3>
+<pre class="cmd"><code>ping -c 4 www.nba.com</code></pre>
+<pre><code>PING e8017.dscb.akamaiedge.net (23.201.217.31) 56(84) bytes of data.
+64 bytes from a23-201-217-31.deploy.static.akamaitechnologies.com (23.201.217.31): icmp_seq=1 ttl=63 time=5.96 ms
+64 bytes from a23-201-217-31.deploy.static.akamaitechnologies.com (23.201.217.31): icmp_seq=2 ttl=63 time=14.4 ms
+64 bytes from a23-201-217-31.deploy.static.akamaitechnologies.com (23.201.217.31): icmp_seq=3 ttl=63 time=6.67 ms
+64 bytes from a23-201-217-31.deploy.static.akamaitechnologies.com (23.201.217.31): icmp_seq=4 ttl=63 time=7.82 ms
+
+--- e8017.dscb.akamaiedge.net ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3015ms
+rtt min/avg/max/mdev = 5.956/8.701/14.359/3.333 ms</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>ping</code></td><td>manda um "eco" para a máquina e espera ele voltar. O nome vem do som do sonar</td></tr>
+<tr><td><code>-c 4</code></td><td><em>count</em>: envia 4 pacotes e para. Sem o <code>-c</code>, o ping só para com <code>Ctrl+C</code></td></tr>
+<tr><td><code>www.nba.com</code></td><td>o destino. Pode ser um nome ou um IP</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Trecho</th><th>O que significa</th></tr>
+<tr><td><code>PING e8017.dscb.akamaiedge.net (23.201.217.31)</code></td><td>o ping primeiro usou o <strong>DNS</strong> (tópico 1) e chegou ao nome final e ao IP</td></tr>
+<tr><td><code>56(84) bytes</code></td><td>cada pacote leva 56 bytes de dados; 84 com os cabeçalhos</td></tr>
+<tr><td><code>64 bytes from … akamaitechnologies.com</code></td><td>a resposta (os 56 bytes mais 8 de cabeçalho) veio de um servidor da <strong>Akamai</strong>. Esse nome comprido é o <strong>DNS reverso</strong>: o caminho contrário, de IP para nome</td></tr>
+<tr><td><code>icmp_seq=1</code></td><td>o número do pacote. Se pular um número, aquele pacote se perdeu</td></tr>
+<tr><td><code>ttl=63</code></td><td><em>time to live</em>: quantos roteadores o pacote ainda poderia atravessar. Cada roteador desconta 1, e no zero o pacote é descartado, para nenhum pacote ficar rodando para sempre. Não confundir com o TTL do DNS, que é tempo de cache</td></tr>
+<tr><td><code>time=5.96 ms</code></td><td>o tempo de <strong>ida e volta</strong></td></tr>
+<tr><td><code>4 packets transmitted, 4 received, 0% packet loss</code></td><td>enviados, recebidos e perda</td></tr>
+<tr><td><code>time 3015ms</code></td><td>a duração do teste inteiro: cerca de 1 pacote por segundo</td></tr>
+<tr><td><code>rtt min/avg/max/mdev</code></td><td><em>round-trip time</em> (tempo de ida e volta): o melhor, a média, o pior tempo e a variação</td></tr>
+</table>
+<ul><li>O ping usa o <strong>ICMP</strong>, um protocolo de "recados de controle" da família IP. Ele testa se o IP responde, mas <strong>não abre uma conversa TCP</strong>.</li><li><strong>Fique de olho:</strong> no Docker Desktop, o <code>ttl</code> aparece sempre como 63, porque o Docker responde ao ping no lugar do contêiner. O <strong>tempo</strong> é real.</li></ul></section>
+<section class="passo" id="t2-p3"><h3>Passo 3 — Novo: a porta está aberta? <code>nc -zv</code></h3>
+<pre class="cmd"><code>nc -zv www.nba.com 443
+nc -zv www.nba.com 80</code></pre>
+<pre><code>Connection to www.nba.com (23.201.217.31) 443 port [tcp/https] succeeded!
+Connection to www.nba.com (23.201.217.31) 80 port [tcp/http] succeeded!</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>nc</code></td><td><em>netcat</em>: abre conexões TCP "na mão". É chamado de "canivete suíço" das redes</td></tr>
+<tr><td><code>-z</code></td><td><em>zero I/O</em>: só testa se a porta atende, sem mandar dados</td></tr>
+<tr><td><code>-v</code></td><td><em>verbose</em>: mostra o resultado (sem ele, o <code>nc -z</code> não escreve nada)</td></tr>
+<tr><td><code>www.nba.com</code></td><td>o destino</td></tr>
+<tr><td><code>443</code> / <code>80</code></td><td>a <strong>porta</strong> a testar: 443 = HTTPS, 80 = HTTP</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<ul><li><code>succeeded!</code> = o <strong>aperto de mão TCP</strong> deu certo: tem um programa atendendo nas portas 443 (HTTPS) e 80 (HTTP).</li><li><code>[tcp/https]</code>: o <code>nc</code> traduziu o número da porta num nome consultando o arquivo <code>/etc/services</code> (da pasta <code>/etc</code>, do tópico 1).</li></ul>
+<p>E uma porta onde ninguém atende:</p>
+<pre class="cmd"><code>nc -4 -zv -w 3 www.nba.com 22</code></pre>
+<pre><code>nc: connect to www.nba.com (23.201.217.31) port 22 (tcp) timed out: Operation now in progress</code></pre>
+<ul><li><code>-4</code> = usa só IPv4 (o contêiner não tem IPv6; sem o <code>-4</code>, aparecem duas linhas extras de erro do IPv6). <code>-zv</code> = os mesmos <code>-z</code> e <code>-v</code> de antes. <code>-w 3</code> = <em>wait</em>: desiste depois de 3 segundos.</li><li><code>timed out</code> = ninguém respondeu na porta 22 (SSH). O servidor da NBA não oferece esse serviço para a internet.</li><li><code>Operation now in progress</code> = o pedido de conexão ficou "em andamento" até o prazo acabar: o SYN foi, mas nenhum SYN-ACK voltou. É diferente de <code>Connection refused</code>, que aparece quando a máquina responde na hora "aqui não tem ninguém". <strong>Silêncio</strong> costuma ser um firewall descartando o pacote; <strong>recusa</strong> é a porta fechada. A parte 2 volta a isso com o <code>nmap</code>.</li></ul></section>
+<section class="passo" id="t2-p4"><h3>Passo 4 — Novo: ver a conversa TCP acontecendo, com <code>ss</code></h3>
+<p><strong>Terminal 1:</strong> abra uma conexão e deixe-a parada.</p>
+<pre class="cmd"><code>nc www.nba.com 443</code></pre>
+<p>O cursor fica parado, sem mensagem nenhuma: a <strong>conexão está aberta</strong>, esperando que alguém fale.</p>
+<ul><li>Sem o <code>-z</code>, o <code>nc</code> abre a conexão e <strong>fica nela</strong>: o que você digitar vai para o servidor, e o que o servidor mandar aparece na tela.</li><li><strong>Não digite nada.</strong> A porta 443 espera uma conversa criptografada (TLS, tópico 4). Se receber texto comum, o servidor desliga.</li></ul>
+<p><strong>Terminal 2:</strong> liste as conexões TCP da máquina.</p>
+<pre class="cmd"><code>ss -tn</code></pre>
+<pre><code>State Recv-Q Send-Q Local Address:Port   Peer Address:Port
+ESTAB 0      0         172.23.0.2:57364 23.201.217.31:443</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>ss</code></td><td><em>socket statistics</em>: lista as conexões da máquina. Um <strong>socket</strong> é a ponta de uma conversa de rede: IP + porta + protocolo</td></tr>
+<tr><td><code>-t</code></td><td>só <strong>TCP</strong></td></tr>
+<tr><td><code>-n</code></td><td><em>numeric</em>: mostra números (<code>443</code>) em vez de nomes (<code>https</code>)</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Coluna</th><th>Valor</th><th>O que significa</th></tr>
+<tr><td><code>State</code></td><td><code>ESTAB</code></td><td><em>established</em>: a conversa TCP está <strong>estabelecida</strong></td></tr>
+<tr><td><code>Recv-Q</code> / <code>Send-Q</code></td><td><code>0</code> / <code>0</code></td><td>dados esperando na fila (nenhum)</td></tr>
+<tr><td><code>Local Address:Port</code></td><td><code>172.23.0.2:57364</code></td><td><strong>você</strong>: o seu IP e uma porta sorteada pelo sistema para esta conversa</td></tr>
+<tr><td><code>Peer Address:Port</code></td><td><code>23.201.217.31:443</code></td><td><strong>o outro lado</strong>: o IP da NBA (Akamai), na porta HTTPS</td></tr>
+</table>
+<ul><li>A porta do seu lado (<code>57364</code>) é <strong>efêmera</strong>: para cada conversa nova, o sistema sorteia uma porta livre (no Linux, entre 32768 e 60999). Por isso cada aluno verá um número diferente.</li><li>Para ver <strong>qual programa</strong> abriu a conexão: <code>ss -tnp</code> (<code>-p</code> = <em>processes</em>) → no fim da linha aparece <code>users:(("nc",pid=72,fd=3))</code>: o nome do programa (<code>nc</code>), o <strong>PID</strong> (<em>process ID</em>, o número do programa em execução, usado para encerrá-lo com <code>kill</code> na parte 2) e o <code>fd</code> (um número interno do programa para esta conexão; pode ignorar).</li></ul>
+<p><strong>Terminal 1:</strong> <code>Ctrl+C</code> para fechar a conexão. No terminal 2, rode <code>ss -tn</code> de novo: a linha sumiu.</p></section>
+</section>
+<section id="t3"><h2>Tópico 3 — Roteadores</h2>
+<div class="oque" id="t3-oque"><h3>O que é um roteador?</h3>
+<p><strong>Onde estamos na viagem:</strong> sabemos o IP da NBA e como abrir a conversa. Mas o servidor não está ligado por um fio direto ao nosso computador. Como os pacotes chegam até lá?</p>
+<p><strong>O que é.</strong> Um <strong>roteador</strong> é um equipamento que <strong>liga redes diferentes</strong> e, para cada pacote que chega, decide <strong>para qual equipamento</strong> mandá-lo em seguida. A "caixinha" do Wi-Fi da sua casa é um roteador: ela liga a rede da casa à rede do provedor.</p>
+<p><strong>Como o pacote chega:</strong> nenhum roteador conhece o caminho inteiro. Cada um só sabe o <strong>próximo passo</strong>, como um GPS que só conhece o próximo cruzamento. O pacote vai pulando de roteador em roteador, e cada pulo é um <strong>salto</strong> (<em>hop</em>). Até o servidor da NBA, o <code>traceroute</code> do passo 3 mostra cerca de 10 saltos.</p>
+<p><strong>Palavras que vão aparecer:</strong></p>
+<ul><li><strong>rede local:</strong> as máquinas "do lado", na mesma casa ou no mesmo escritório. Entre elas, a conversa é direta.</li><li><strong>gateway</strong> (porta de saída): o primeiro roteador, para onde vai tudo o que <strong>não</strong> é da rede local (passo 1).</li><li><strong>provedor:</strong> a empresa que leva a internet até você (Vivo, Claro…). A internet é uma <strong>rede de redes</strong>: a de casa, a do provedor, as internacionais e a da Akamai.</li></ul>
+<p><strong>Por que importa para segurança:</strong> os pacotes passam por <strong>equipamentos de várias empresas</strong>. Se a conversa não estiver protegida, qualquer um desses pontos pode ler o conteúdo. É o gancho para o HTTPS.</p></div>
+<p class="desafio"><strong>Desafio:</strong> <strong>Descubra qual é o primeiro roteador do seu caminho (o seu gateway), por quantos roteadores os pacotes passam até a NBA, e de quem é a rede onde o site da NBA está.</strong></p>
+<section class="passo" id="t3-p1"><h3>Passo 1 — Qual é o meu gateway? <code>ip r</code></h3>
+<pre class="cmd"><code>ip r</code></pre>
+<pre><code>default via 172.23.0.1 dev eth0
+172.23.0.0/16 dev eth0 proto kernel scope link src 172.23.0.2</code></pre>
+<table>
+<tr><th>Linha</th><th>Leitura</th></tr>
+<tr><td><code>default via 172.23.0.1 dev eth0</code></td><td>"Para <strong>qualquer destino</strong> que eu não conheça, entregue ao <strong>172.23.0.1</strong>, saindo pela placa <code>eth0</code>." Esse é o <strong>gateway</strong>.</td></tr>
+<tr><td><code>172.23.0.0/16 dev eth0 … src 172.23.0.2</code></td><td>"Os endereços de <code>172.23.0.0</code> a <code>172.23.255.255</code> estão <strong>aqui do lado</strong>: fale direto, sem roteador."</td></tr>
+</table>
+<p><code>ip r</code> (<em>route</em>; por extenso, <code>ip route</code>) mostra a <strong>tabela de rotas</strong> do Kali: a mesma ideia que o roteador usa.</p>
+<p class="explica"><strong>🔍 Entendendo a saída, palavra por palavra</strong></p>
+<table>
+<tr><th>Palavra</th><th>O que significa</th></tr>
+<tr><td><code>default</code></td><td>"qualquer destino que não esteja em outra linha", ou seja, a internet</td></tr>
+<tr><td><code>via 172.23.0.1</code></td><td>"passando por" este roteador, o <strong>gateway</strong></td></tr>
+<tr><td><code>dev eth0</code></td><td>saindo pela placa de rede <code>eth0</code> (<em>device</em>)</td></tr>
+<tr><td><code>172.23.0.0/16</code></td><td>a rede local inteira: de <code>172.23.0.0</code> a <code>172.23.255.255</code></td></tr>
+<tr><td><code>proto kernel</code></td><td>quem criou a rota: o próprio sistema (o <em>kernel</em>, o núcleo do Linux), automaticamente, ao configurar o IP</td></tr>
+<tr><td><code>scope link</code></td><td>o destino está "no mesmo fio": dá para falar direto, sem roteador</td></tr>
+<tr><td><code>src 172.23.0.2</code></td><td>o IP de origem que o Kali usa para falar com essa rede</td></tr>
+</table></section>
+<section class="passo" id="t3-p2"><h3>Passo 2 — Quem é o gateway na rede local? <code>ip neigh</code></h3>
+<pre class="cmd"><code>ip neigh</code></pre>
+<pre><code>172.23.0.1 dev eth0 lladdr 02:42:44:42:75:11 STALE</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>ip neigh</code></td><td><em>neighbour</em> (vizinho): a tabela de <strong>vizinhos</strong>, as máquinas da rede local com quem o Kali falou há pouco. Substitui o antigo <code>arp -a</code></td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Trecho</th><th>O que significa</th></tr>
+<tr><td><code>172.23.0.1</code></td><td>o IP do vizinho: o gateway</td></tr>
+<tr><td><code>dev eth0</code></td><td>encontrado pela placa <code>eth0</code></td></tr>
+<tr><td><code>lladdr 02:42:44:42:75:11</code></td><td><em>link-layer address</em>: o <strong>endereço MAC</strong> do gateway, o "número de série" da placa de rede. São 6 pares em hexadecimal (algarismos de <code>0</code> a <code>9</code> e letras de <code>a</code> a <code>f</code>). Em placas físicas, os 3 primeiros pares identificam o fabricante; aqui é um MAC inventado pelo Docker</td></tr>
+<tr><td><code>STALE</code></td><td>faz um tempo que não conversamos. <code>REACHABLE</code> = conversamos agora há pouco</td></tr>
+</table>
+<ul><li><strong>Por que dois endereços?</strong> O IP diz <strong>para onde</strong> o pacote vai na internet; o MAC diz <strong>para qual placa</strong> entregá-lo dentro da rede local. Para descobrir o MAC de um IP, a máquina pergunta a toda a rede local "quem tem o <code>172.23.0.1</code>?" (o protocolo <strong>ARP</strong>) e guarda a resposta nesta tabela.</li><li>Se a lista vier vazia, rode antes <code>ping -c 1 172.23.0.1</code>: um único ping para o gateway obriga o Kali a descobrir o MAC dele.</li></ul></section>
+<section class="passo" id="t3-p3"><h3>Passo 3 — Novo: o caminho inteiro com <code>traceroute</code></h3>
+<pre class="cmd"><code>traceroute -m 15 www.nba.com</code></pre>
+<pre><code>traceroute to www.nba.com (23.201.217.31), 15 hops max, 60 byte packets
+ 1  172.23.0.1 (172.23.0.1)  0.561 ms  0.474 ms  0.454 ms
+ 2  192.168.64.1 (192.168.64.1)  0.442 ms  65.958 ms  65.918 ms
+ 3  192.168.15.1 (192.168.15.1)  1.398 ms  2.148 ms  2.961 ms
+ 4  * * *
+ 5  201-1-225-13.dsl.telesp.net.br (201.1.225.13)  13.404 ms  14.033 ms 201-1-225-15.dsl.telesp.net.br (201.1.225.15)  14.761 ms
+ 6  187-100-54-220.dsl.telesp.net.br (187.100.54.220)  14.393 ms 187-100-197-184.dsl.telesp.net.br (187.100.197.184)  9.298 ms *
+ 7  187-100-57-104.dsl.telesp.net.br (187.100.57.104)  9.206 ms * *
+ 8  * * 84.16.7.106 (84.16.7.106)  15.861 ms
+ 9  5.53.0.85 (5.53.0.85)  23.374 ms  23.332 ms  23.319 ms
+10  * * *
+…
+15  * * *</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>traceroute</code></td><td>"rastrear a rota": mostra cada roteador entre você e o destino</td></tr>
+<tr><td><code>-m 15</code></td><td><em>max hops</em>: no máximo 15 saltos</td></tr>
+<tr><td><code>www.nba.com</code></td><td>o destino</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<ul><li>1ª linha: o destino e o IP dele (via DNS), o limite de saltos (<code>15 hops max</code>) e o tamanho de cada sonda (<code>60 byte packets</code>).</li><li><strong>Como ler:</strong> cada linha é um <strong>salto</strong> (um roteador). O traceroute manda 3 sondas por salto, e cada <code>ms</code> é o tempo de uma delas.</li></ul>
+<table>
+<tr><th>Salto</th><th>Quem é</th><th>Como reconhecer</th></tr>
+<tr><td>1 <code>172.23.0.1</code></td><td>o <strong>gateway</strong> do Docker</td><td>é o <code>default via</code> do <code>ip r</code></td></tr>
+<tr><td>2 <code>192.168.64.1</code></td><td>a máquina virtual do Docker Desktop</td><td>IP privado</td></tr>
+<tr><td>3 <code>192.168.15.1</code></td><td>o <strong>roteador de casa</strong></td><td>IP privado <code>192.168.x.1</code></td></tr>
+<tr><td>4 <code>* * *</code></td><td>um roteador que não responde às sondas</td><td>normal: muitos são configurados assim</td></tr>
+<tr><td>5 a 7 <code>…telesp.net.br</code></td><td>a rede do <strong>provedor</strong> (Telesp = Vivo)</td><td>o nome do roteador entrega o dono</td></tr>
+<tr><td>8 e 9 <code>84.16.7.106</code>, <code>5.53.0.85</code></td><td>a rede <strong>internacional</strong> da Telefônica (dona da Vivo)</td><td>confirmado no passo 4</td></tr>
+<tr><td>10 em diante <code>* * *</code></td><td>a rede da Akamai, que não responde às sondas</td><td>o destino funciona mesmo assim</td></tr>
+</table>
+<ul><li><code>-m 15</code> = no máximo 15 saltos. Sem ele, o padrão é 30, e a turma esperaria uns 25 segundos vendo linhas de <code>* * *</code>.</li><li><strong>Como ele funciona:</strong> o traceroute manda pacotes com "validade" de 1 salto, depois 2, depois 3… Cada roteador onde a validade acaba avisa de volta, e assim se identifica. A "validade" é o mesmo <code>ttl</code> que apareceu no <code>ping</code>.</li><li>Nomes como <code>201-1-225-13.dsl.telesp.net.br</code> são o <strong>DNS reverso</strong> do roteador (de IP para nome). Quando não há nome, aparece só o IP, repetido entre parênteses.</li><li>Cada <code>*</code> é uma sonda que não teve resposta dentro do tempo de espera.</li><li>No salto 5 aparecem <strong>dois IPs</strong> na mesma linha: sondas diferentes foram respondidas por roteadores diferentes, porque o provedor divide o tráfego entre caminhos paralelos.</li></ul></section>
+<section class="passo" id="t3-p4"><h3>Passo 4 — Novo: de quem é cada rede? <code>whois</code></h3>
+<p>O traceroute mostrou IPs sem nome nos saltos 8 e 9. O <code>whois</code> consulta o <strong>registro oficial de cada bloco de IPs</strong>:</p>
+<pre class="cmd"><code>whois 84.16.7.106 | grep -iE "^(netname|descr|country):"</code></pre>
+<pre><code>netname:        TDATANET
+descr:          Telefonica International Wholesale Network TIWS Infrastructure
+country:        ES
+descr:          Telefonica  International  Wholesale Network</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando.</strong> São <strong>dois comandos ligados por um cano</strong>:</p>
+<pre><code>whois 84.16.7.106    |    grep -iE "^(netname|descr|country):"
+└─ busca o registro       └─ deixa passar só as linhas que interessam
+   (dezenas de linhas)</code></pre>
+<ul><li><code>whois</code> ("quem é"): consulta o <strong>registro público</strong> de quem é dono de um IP ou de um domínio. Os IPs do mundo são distribuídos por 5 registros regionais: na América Latina, o LACNIC (no Brasil, o Registro.br); na Europa, o RIPE; na América do Norte, o ARIN.</li><li><code>84.16.7.106</code>: o IP a consultar, o salto 8 do traceroute.</li><li><code>|</code> (<em>pipe</em>, cano): pega a saída do comando da esquerda e entrega como entrada ao da direita. A resposta completa do <code>whois</code> é longa; o <code>grep</code> filtra.</li><li><code>grep</code>: mostra só as linhas que combinam com um padrão.</li><li><code>-i</code>: ignora a diferença entre maiúsculas e minúsculas (<code>netname</code> também acha <code>NetName</code>).</li><li><code>-E</code>: permite padrões "estendidos", como o <code>|</code> de "ou" dentro dos parênteses.</li><li><code>"^(netname|descr|country):"</code>: o padrão. <code>^</code> = começo da linha; <code>(netname|descr|country)</code> = uma dessas três palavras; <code>:</code> = seguida de dois-pontos. As <strong>aspas</strong> impedem que o terminal confunda esse <code>|</code> com o pipe.</li></ul>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<ul><li><code>netname</code> = o nome do bloco de IPs; <code>descr</code> = a descrição de quem é; <code>country</code> = o país do registro (<code>ES</code> = Espanha). O <code>descr</code> aparece duas vezes porque a resposta tem mais de uma seção, cada uma com a sua descrição.</li><li>Resultado: rede <strong>internacional da Telefônica</strong>, registrada na Espanha. É por ela que a Vivo leva o tráfego até outras redes.</li></ul>
+<p>Agora o destino:</p>
+<pre class="cmd"><code>whois 23.201.217.31 | grep -iE "^(NetName|OrgName|Country):"</code></pre>
+<pre><code>NetName:        AKAMAI
+OrgName:        Akamai Technologies, Inc.
+Country:        US</code></pre>
+<p>O IP da NBA pertence à <strong>Akamai</strong>, uma empresa americana.</p>
+<p>O filtro mudou porque este IP está registrado no <strong>ARIN</strong> (América do Norte), que usa outros nomes de campo: <code>NetName</code> (o nome do bloco), <code>OrgName</code> (a organização dona) e <code>Country</code> (<code>US</code> = Estados Unidos).</p>
+<p><strong>Pergunta para a turma:</strong> "A Akamai é americana, mas o ping levou uns 6 ms. Onde está esse servidor?" <strong>Resposta:</strong> perto, no Brasil. Uma ida e volta até os Estados Unidos levaria muito mais, normalmente acima de 100 ms. É a <strong>CDN</strong> do tópico 1: o registro diz de quem é a rede, não onde fica o servidor.</p></section>
+<section class="passo" id="t3-p5"><h3>Passo 5 — <code>mtr</code>: traceroute e ping juntos</h3>
+<pre class="cmd"><code>mtr -u -r -c 5 www.nba.com</code></pre>
+<pre><code>HOST: 52ddc9cccaf3                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 172.23.0.1                 0.0%     5    0.3   0.2   0.1   0.6   0.2
+  2.|-- 192.168.64.1               0.0%     5    0.5   0.8   0.5   1.7   0.5
+  3.|-- 192.168.15.1               0.0%     5    1.8   1.9   1.6   2.2   0.2
+  4.|-- ???                       100.0     5    0.0   0.0   0.0   0.0   0.0
+  5.|-- 201-1-225-15.dsl.telesp.n  0.0%     5    7.7  10.5   6.1  20.8   5.9
+  …
+  8.|-- 84.16.7.106                0.0%     5    8.2   7.6   7.1   8.2   0.5
+  9.|-- 5.53.0.85                  0.0%     5   13.0  26.5  11.2  52.8  16.7
+ 10.|-- ???                       100.0     5    0.0   0.0   0.0   0.0   0.0</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>mtr</code></td><td><em>My Traceroute</em> (originalmente, <em>Matt's traceroute</em>): junta o caminho do <code>traceroute</code> com as estatísticas do <code>ping</code></td></tr>
+<tr><td><code>-u</code></td><td>sondas <strong>UDP</strong>, como as do <code>traceroute</code> padrão do Linux</td></tr>
+<tr><td><code>-r</code></td><td><em>report</em>: roda e imprime um relatório no fim. Sem ele, o <code>mtr</code> abre uma tela que se atualiza ao vivo (sai com <code>q</code>)</td></tr>
+<tr><td><code>-c 5</code></td><td><em>count</em>: 5 sondas por salto</td></tr>
+<tr><td><code>www.nba.com</code></td><td>o destino</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<table>
+<tr><th>Coluna</th><th>O que significa</th></tr>
+<tr><td><code>Loss%</code></td><td>a perda de pacotes <strong>naquele salto</strong></td></tr>
+<tr><td><code>Snt</code></td><td>quantas sondas foram enviadas</td></tr>
+<tr><td><code>Last</code> / <code>Avg</code> / <code>Best</code> / <code>Wrst</code></td><td>o último tempo, a média, o melhor e o pior, em ms</td></tr>
+<tr><td><code>???</code></td><td>um salto que não respondeu (o <code>* * *</code> do traceroute)</td></tr>
+</table>
+<ul><li><code>HOST: 52ddc9cccaf3</code> = a máquina de origem: o nome do contêiner, o mesmo do prompt.</li><li><code>1.|--</code> = o número do salto.</li><li><code>StDev</code> = desvio padrão: quanto os tempos variaram. Número alto = conexão instável naquele trecho.</li><li>Perda num salto do meio que <strong>não continua</strong> nos seguintes não é problema: o roteador só dá pouca prioridade às sondas.</li></ul></section>
+</section>
+<section id="t4"><h2>Tópico 4 — HTTP e HTTPS</h2>
+<div class="oque" id="t4-oque"><h3>O que são HTTP e HTTPS?</h3>
+<p><strong>Onde estamos na viagem:</strong> os pacotes já chegam ao servidor da NBA e a conversa TCP está aberta. Falta <strong>pedir a página</strong>.</p>
+<p><strong>O que é HTTP.</strong> O <strong>HTTP</strong> (<em>HyperText Transfer Protocol</em>) é a <strong>língua da web</strong>: o combinado de como o navegador pede uma página e de como o servidor responde. Funciona como um pedido no balcão:</p>
+<ul><li>o <strong>pedido</strong> diz o que se quer (<code>GET /</code> = "me dá a página inicial") e traz cabeçalhos, como quem está pedindo (o <code>User-Agent</code>);</li><li>a <strong>resposta</strong> traz um <strong>código de status</strong> (<code>200</code> = tudo certo, <code>404</code> = não existe, <code>403</code> = proibido), cabeçalhos e o conteúdo da página, em HTML.</li></ul>
+<p><strong>O problema do HTTP.</strong> Ele viaja em <strong>texto aberto</strong>. Lembra dos roteadores de várias empresas no caminho (tópico 3)? Todos poderiam ler o que você pede e o que recebe, inclusive senhas.</p>
+<p><strong>O que é HTTPS.</strong> É o <strong>mesmo HTTP, dentro de um túnel criptografado</strong>, chamado <strong>TLS</strong> (o <em>S</em> é de <em>secure</em>, seguro). Ele garante duas coisas:</p>
+<ul><li><strong>sigilo:</strong> quem está no caminho vê os pacotes passando, mas não consegue ler o conteúdo;</li><li><strong>identidade:</strong> o servidor mostra um <strong>certificado digital</strong>, assinado por uma empresa confiável (a <strong>autoridade certificadora</strong>), que prova que ele é mesmo o <code>nba.com</code>. É isso que o cadeado do navegador confere.</li></ul>
+<p><strong>Atenção:</strong> o cadeado prova que a conversa é segura com <strong>aquele</strong> site, e não que o site é honesto. Um golpista também consegue um certificado para o domínio falso dele.</p></div>
+<p class="desafio"><strong>Desafio:</strong> <strong>Descubra o que o servidor da NBA responde quando o <code>curl</code> pede a página inicial. Se ele recusar, descubra por quê e consiga uma resposta 200. Depois, descubra quem garantiu o certificado do site.</strong></p>
+<section class="passo" id="t4-p1"><h3>Passo 1 — O primeiro pedido: <code>curl -I</code></h3>
+<pre class="cmd"><code>curl -I https://www.nba.com</code></pre>
+<pre><code>HTTP/2 403
+mime-version: 1.0
+content-type: text/html
+content-length: 365
+expires: Mon, 19 Oct 2026 16:40:33 GMT
+date: Mon, 19 Oct 2026 16:40:33 GMT
+x-frame-options: sameorigin
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+strict-transport-security: max-age=86400</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>curl</code></td><td><em>client URL</em>: um cliente web de terminal. Faz o mesmo pedido que o navegador, mas mostra a resposta crua, sem desenhar a página</td></tr>
+<tr><td><code>-I</code></td><td>(i <strong>maiúsculo</strong>) pede <strong>só os cabeçalhos</strong> da resposta (o método <code>HEAD</code>), sem baixar a página</td></tr>
+<tr><td><code>https://www.nba.com</code></td><td>a <strong>URL</strong>: <code>https://</code> é o protocolo (HTTP com cadeado, porta 443); <code>www.nba.com</code> é o servidor. Sem nada depois, pede a página inicial, <code>/</code></td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída.</strong> Cada linha depois da primeira é um <strong>cabeçalho</strong>, no formato <code>nome: valor</code>. Os que começam com <code>x-</code> nasceram fora do padrão oficial e acabaram adotados.</p>
+<table>
+<tr><th>Linha</th><th>O que significa</th></tr>
+<tr><td><code>HTTP/2 403</code></td><td>protocolo HTTP versão 2, código <strong>403: proibido</strong>. <strong>O servidor recusou o pedido</strong></td></tr>
+<tr><td><code>mime-version: 1.0</code></td><td>a versão do padrão que descreve tipos de conteúdo. Pode ignorar</td></tr>
+<tr><td><code>content-type: text/html</code></td><td>o tipo do conteúdo: uma página HTML</td></tr>
+<tr><td><code>content-length: 365</code></td><td>o tamanho do conteúdo, em bytes (uma página de erro pequena)</td></tr>
+<tr><td><code>expires</code> / <code>date</code></td><td><code>date</code> = quando a resposta foi gerada; <code>expires</code> = até quando ela vale. Os dois iguais = "não guarde em cache"</td></tr>
+<tr><td><code>x-frame-options: sameorigin</code></td><td>a página só pode ser embutida dentro do próprio site. Impede que um site falso a esconda por baixo de botões enganosos (<em>clickjacking</em>)</td></tr>
+<tr><td><code>x-xss-protection: 1; mode=block</code></td><td>pede ao navegador que bloqueie a página se detectar injeção de código (XSS). Os navegadores atuais ignoram, mas muitos servidores ainda mandam</td></tr>
+<tr><td><code>x-content-type-options: nosniff</code></td><td>"não tente adivinhar o tipo do arquivo: confie no <code>content-type</code>". Evita que um arquivo disfarçado seja executado como código</td></tr>
+<tr><td><code>strict-transport-security: max-age=86400</code></td><td>um aviso ao navegador: "use sempre HTTPS comigo" pelos próximos 86.400 segundos (1 dia). Sigla: <strong>HSTS</strong></td></tr>
+</table></section>
+<section class="passo" id="t4-p2"><h3>Passo 2 — O que o servidor disse?</h3>
+<pre class="cmd"><code>curl https://www.nba.com</code></pre>
+<pre><code>&lt;HTML&gt;&lt;HEAD&gt;
+&lt;TITLE&gt;Access Denied&lt;/TITLE&gt;
+&lt;/HEAD&gt;&lt;BODY&gt;
+&lt;H1&gt;Access Denied&lt;/H1&gt;
+You don't have permission to access "http&amp;#58;&amp;#47;&amp;#47;www&amp;#46;nba&amp;#46;com&amp;#47;" on this server.&lt;P&gt;
+Reference&amp;#32;&amp;#35;18&amp;#46;91421502&amp;#46;1792428041&amp;#46;8ce22244
+…</code></pre>
+<ul><li>Sem o <code>-I</code>, o curl faz um <code>GET</code> comum e mostra o <strong>conteúdo</strong> da resposta: uma página de <strong>"Acesso negado"</strong>.</li><li>O conteúdo é <strong>HTML</strong>, a língua das páginas web. Cada <code>&lt;MARCA&gt;</code> abre um pedaço e <code>&lt;/MARCA&gt;</code> o fecha: <code>&lt;HEAD&gt;</code> = informações sobre a página; <code>&lt;TITLE&gt;</code> = o título da aba; <code>&lt;BODY&gt;</code> = o que aparece na tela; <code>&lt;H1&gt;</code> = título grande; <code>&lt;P&gt;</code> = parágrafo.</li><li><code>&amp;#58;</code>, <code>&amp;#47;</code>, <code>&amp;#46;</code>… são <strong>caracteres codificados</strong>: o número de cada símbolo na tabela de caracteres (<code>&amp;#58;</code> = <code>:</code>, <code>&amp;#47;</code> = <code>/</code>, <code>&amp;#46;</code> = <code>.</code>, <code>&amp;#32;</code> = espaço, <code>&amp;#35;</code> = <code>#</code>). Decodificado, o texto diz <code>"http://www.nba.com/"</code> e <code>Reference #18.91421502…</code>. Os servidores fazem isso para que nenhum texto seja interpretado como código.</li><li><code>Reference #…</code> = o código deste bloqueio. Serve para o suporte da Akamai achar o caso nos registros deles.</li><li><strong>Pergunta para a turma:</strong> "No navegador o site abre. Por que o curl foi barrado?" A resposta vem no tópico 5, quando a turma enxergar o pedido do curl por dentro. Por enquanto, a pista: o servidor sabe <strong>quem está pedindo</strong>.</li></ul></section>
+<section class="passo" id="t4-p3"><h3>Passo 3 — Novo: o <code>User-Agent</code></h3>
+<p>Todo cliente se apresenta num cabeçalho chamado <strong><code>User-Agent</code></strong>. O curl se apresenta como <code>curl/8.22.0</code>; o Chrome, como <code>Mozilla/5.0 …</code>. A Akamai bloqueia clientes que parecem robôs. Vamos pedir de novo, apresentando-nos como navegador:</p>
+<pre class="cmd"><code>curl -I -A "Mozilla/5.0" https://www.nba.com</code></pre>
+<pre><code>HTTP/2 200
+content-type: text/html; charset=utf-8
+…
+cache-control: private, no-cache, no-store, must-revalidate
+date: Mon, 19 Oct 2026 16:40:42 GMT</code></pre>
+<ul><li><code>-A</code> (<em>user Agent</em>) = troca o <code>User-Agent</code>. Com <code>Mozilla/5.0</code>, a resposta passou a ser <strong>200: deu certo</strong>.</li><li><code>"Mozilla/5.0"</code> = o texto que o curl vai declarar. As aspas agrupam o texto (são obrigatórias quando ele tem espaços, como o User-Agent completo de um navegador). <strong>Por que "Mozilla"?</strong> Herança dos anos 1990: os sites mandavam páginas melhores para o Netscape (apelidado de Mozilla), e os outros navegadores passaram a se apresentar do mesmo jeito. Até hoje o Chrome, o Edge e o Safari começam o User-Agent com <code>Mozilla/5.0</code>.</li><li>Na saída: <code>content-type: text/html; charset=utf-8</code> = página HTML com os caracteres (acentos inclusive) codificados em <strong>UTF-8</strong>; <code>cache-control: private, no-cache, no-store, must-revalidate</code> = "não guarde esta página, peça sempre uma nova" (é a página inicial, que muda o tempo todo); o <code>…</code> marca linhas omitidas aqui.</li><li><strong>Ligação com segurança:</strong> sites usam o <code>User-Agent</code> para filtrar robôs (é um sistema antirrobô, parte de um <em>WAF</em>). Mas o <code>User-Agent</code> é só um texto que o cliente escreve, e é fácil mentir nele. Ele não prova a identidade de ninguém.</li></ul></section>
+<section class="passo" id="t4-p4"><h3>Passo 4 — E pelo <code>http://</code>, sem o <code>s</code>?</h3>
+<pre class="cmd"><code>curl -I -A "Mozilla/5.0" http://www.nba.com</code></pre>
+<pre><code>HTTP/1.1 301 Moved Permanently
+Content-Length: 0
+Location: https://www.nba.com/
+Date: Mon, 19 Oct 2026 16:40:42 GMT
+Connection: keep-alive</code></pre>
+<ul><li><strong>301</strong> = "mudei de endereço". O cabeçalho <code>Location</code> diz para onde: <code>https://www.nba.com/</code>.</li><li>O servidor <strong>não aceita conversa sem cadeado</strong>: manda todo mundo para a versão segura. O navegador segue sozinho; o curl só seguiria com <code>-L</code> (<em>location</em>: "siga o redirecionamento").</li><li><code>http://</code> = HTTP sem cadeado, na porta 80. Tudo viajaria em texto aberto.</li><li><code>HTTP/1.1</code> = uma versão mais antiga do protocolo. Na prática, o HTTP/2 só é usado junto com o HTTPS; por isso aqui a resposta vem em 1.1.</li><li><code>Content-Length: 0</code> = a resposta não tem conteúdo, só o aviso de mudança.</li><li><code>Connection: keep-alive</code> = o servidor mantém a conexão TCP aberta para os próximos pedidos, sem repetir o aperto de mão.</li></ul></section>
+<section class="passo" id="t4-p5"><h3>Passo 5 — Novo: o raio-x completo, <code>curl -v</code></h3>
+<pre class="cmd"><code>curl -v -I -A "Mozilla/5.0" https://www.nba.com</code></pre>
+<p>A saída é longa. As linhas que importam, na ordem em que aparecem:</p>
+<pre><code>* Host www.nba.com:443 was resolved.
+* IPv6: 2600:1419:4e00:98d::1f51, 2600:1419:4e00:989::1f51
+* IPv4: 23.201.217.31
+*   Trying 23.201.217.31:443...
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519MLKEM768 / RSASSA-PSS
+* ALPN: server accepted h2
+*   subject: C=US; ST=New York; L=New York; O="NBA Media Ventures, LLC"; CN=*.nba.com
+*   start date: Jul 18 00:00:00 2026 GMT
+*   expire date: Feb  1 23:59:59 2027 GMT
+*   issuer: C=US; O=DigiCert Inc; OU=www.digicert.com; CN=GeoTrust TLS RSA CA G1
+*   subjectAltName: "www.nba.com" matches cert's "*.nba.com"
+* SSL certificate verified via OpenSSL.
+* Established connection to www.nba.com (23.201.217.31 port 443) from 172.23.0.2 port 44592
+&gt; HEAD / HTTP/2
+&gt; Host: www.nba.com
+&gt; User-Agent: Mozilla/5.0
+&gt; Accept: */*
+&gt;
+&lt; HTTP/2 200</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>-v</code></td><td><em>verbose</em> (detalhado): mostra tudo o que o curl faz, passo a passo</td></tr>
+<tr><td><code>-I</code></td><td>só os cabeçalhos, como no passo 1</td></tr>
+<tr><td><code>-A "Mozilla/5.0"</code></td><td>apresentando-se como navegador, como no passo 3</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída.</strong> Linhas com <code>*</code> são comentários do curl, <code>&gt;</code> é o que <strong>nós enviamos</strong> e <code>&lt;</code> é o que o <strong>servidor respondeu</strong>. O curl ainda escreve <strong>SSL</strong>, o nome antigo do <strong>TLS</strong>.</p>
+<table>
+<tr><th>Linha</th><th>Etapa da viagem</th></tr>
+<tr><td><code>Host www.nba.com:443 was resolved</code> / <code>IPv4: 23.201.217.31</code></td><td><strong>DNS</strong> (tópico 1)</td></tr>
+<tr><td><code>Trying 23.201.217.31:443</code></td><td><strong>TCP</strong>: abrindo a conexão na porta 443 (tópico 2)</td></tr>
+<tr><td><code>SSL connection using TLSv1.3</code></td><td><strong>TLS</strong>: o túnel criptografado está montado, na versão 1.3, a mais nova</td></tr>
+<tr><td><code>subject: … O="NBA Media Ventures, LLC"; CN=*.nba.com</code></td><td><strong>para quem</strong> é o certificado: a empresa da NBA, válido para qualquer <code>algo.nba.com</code></td></tr>
+<tr><td><code>start date</code> / <code>expire date</code></td><td>a validade do certificado</td></tr>
+<tr><td><code>issuer: … DigiCert Inc … GeoTrust TLS RSA CA G1</code></td><td><strong>quem garantiu</strong> o certificado: a autoridade certificadora <strong>DigiCert</strong>, pela marca GeoTrust</td></tr>
+<tr><td><code>"www.nba.com" matches cert's "*.nba.com"</code></td><td>o nome pedido <strong>bate</strong> com o certificado. É isso que o cadeado do navegador confere</td></tr>
+<tr><td><code>SSL certificate verified</code></td><td>o certificado foi aprovado</td></tr>
+<tr><td><code>Established connection … from 172.23.0.2 port 44592</code></td><td>a conversa TCP: o nosso IP e a porta sorteada (o mesmo que o <code>ss</code> mostrou)</td></tr>
+<tr><td><code>&gt; HEAD / HTTP/2</code> … <code>&gt; User-Agent: Mozilla/5.0</code></td><td>o <strong>pedido HTTP</strong>, já dentro do túnel seguro</td></tr>
+<tr><td><code>&lt; HTTP/2 200</code></td><td>a <strong>resposta</strong>: deu certo</td></tr>
+</table>
+<p class="explica"><strong>🔍 O que mais aparece</strong></p>
+<table>
+<tr><th>Trecho</th><th>O que significa</th></tr>
+<tr><td><code>IPv6: …</code></td><td>o DNS também devolveu endereços IPv6, mas o curl usa o IPv4, porque o contêiner não tem IPv6</td></tr>
+<tr><td><code>TLS_AES_256_GCM_SHA384</code></td><td>como os dados são embaralhados: algoritmo <strong>AES</strong> com chave de 256 bits; <strong>SHA-384</strong> é o tipo de resumo (<em>hash</em>) usado para gerar as chaves</td></tr>
+<tr><td><code>X25519MLKEM768</code></td><td>como cliente e servidor combinaram uma chave secreta sem que ninguém no caminho a descubra. Mistura um método clássico (X25519) com um novo (ML-KEM), feito para resistir a computadores quânticos</td></tr>
+<tr><td><code>RSASSA-PSS</code></td><td>o tipo de assinatura que o servidor usou para provar que é o dono do certificado</td></tr>
+<tr><td><code>ALPN: server accepted h2</code></td><td>durante a montagem do túnel, os dois combinaram falar <strong>HTTP/2</strong> (<code>h2</code>)</td></tr>
+<tr><td><code>C=</code> · <code>ST=</code> · <code>L=</code> · <code>O=</code> · <code>OU=</code> · <code>CN=</code></td><td>campos do certificado: país (<em>country</em>), estado, cidade (<em>locality</em>), organização, departamento (<em>organizational unit</em>) e o nome principal (<em>common name</em>)</td></tr>
+<tr><td><code>*.nba.com</code></td><td>o <code>*</code> é um coringa: vale para <code>www.nba.com</code>, <code>stats.nba.com</code> e qualquer outro <code>algo.nba.com</code></td></tr>
+<tr><td><code>subjectAltName</code></td><td>a lista de nomes que o certificado cobre</td></tr>
+<tr><td><code>&gt; Host: www.nba.com</code></td><td>para qual site é o pedido. Um mesmo IP da Akamai atende muitos sites, e é por este cabeçalho que ele sabe qual entregar</td></tr>
+<tr><td><code>&gt; Accept: */*</code></td><td>o cliente aceita qualquer tipo de conteúdo</td></tr>
+<tr><td><code>&gt;</code> sozinho</td><td>uma linha em branco: marca o <strong>fim</strong> dos cabeçalhos do pedido</td></tr>
+</table>
+<p><strong>No navegador (opcional):</strong> abra <code>https://www.nba.com</code>, clique no ícone à esquerda do endereço e abra o certificado. As mesmas informações aparecem: emitido para <code>*.nba.com</code>, por DigiCert/GeoTrust.</p></section>
+</section>
+<section id="t5"><h2>Tópico 5 — Cliente-servidor</h2>
+<div class="oque" id="t5-oque"><h3>O que é o modelo cliente-servidor?</h3>
+<p><strong>Onde estamos na viagem:</strong> nos tópicos 1 a 4, nós fomos sempre <strong>quem pede</strong>. Agora vamos ver o outro lado: <strong>quem responde</strong>.</p>
+<p><strong>O que é.</strong> Quase tudo na internet funciona com dois papéis:</p>
+<ul><li><strong>cliente:</strong> o programa que <strong>faz o pedido</strong> (o navegador, o <code>curl</code>, o app do celular);</li><li><strong>servidor:</strong> o programa que fica <strong>esperando</strong> pedidos numa porta e <strong>responde</strong> (o site da NBA).</li></ul>
+<p><strong>Servidor não é uma máquina especial.</strong> É só um <strong>programa escutando uma porta</strong>. Qualquer computador vira servidor ao rodar um programa desses, e é o que faremos com o Kali no passo 2. O mesmo computador pode ser cliente de um serviço e servidor de outro.</p>
+<p><strong>O servidor anota tudo.</strong> A cada pedido, ele registra num <strong>log</strong> quem pediu (o IP), quando, o quê e com qual programa.</p>
+<p><strong>Por que importa para segurança:</strong> os logs de servidor são a matéria-prima de uma investigação. E o que o cliente diz sobre si mesmo (como o <code>User-Agent</code>) é só uma declaração: pode ser falsa.</p></div>
+<p class="desafio"><strong>Desafio:</strong> <strong>Transforme o seu Kali num servidor web com uma página sua, acesse essa página como cliente e descubra exatamente o que o <code>curl</code> manda para um servidor.</strong></p>
+<section class="passo" id="t5-p1"><h3>Passo 1 — Criar a página</h3>
+<p><strong>Terminal 1:</strong></p>
+<pre class="cmd"><code>mkdir -p /workspace/aula-3/pratica/meu-site
+cd /workspace/aula-3/pratica/meu-site</code></pre>
+<p class="explica"><strong>🔍 Entendendo os comandos</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>mkdir</code></td><td><em>make directory</em>: cria uma pasta</td></tr>
+<tr><td><code>-p</code></td><td><em>parents</em>: cria também as pastas do caminho que ainda não existem (<code>pratica</code> e depois <code>meu-site</code>) e não reclama se elas já existirem</td></tr>
+<tr><td><code>/workspace/aula-3/pratica/meu-site</code></td><td>o caminho da pasta nova. Como <code>/workspace</code> é compartilhada, ela aparece também no VS Code, dentro da pasta do projeto</td></tr>
+<tr><td><code>cd</code></td><td><em>change directory</em>: entra na pasta. O prompt muda para mostrar onde você está. <code>cd ..</code> volta uma pasta</td></tr>
+</table>
+<p>No vim:</p>
+<ol><li><code>vim index.html</code></li><li>Aperte <code>i</code> (modo de digitar).</li><li>Digite as duas linhas:
+<pre class="cmd"><code>&lt;h1&gt;Meu servidor&lt;/h1&gt;
+&lt;p&gt;Este site roda no meu Kali.&lt;/p&gt;</code></pre></li><li><code>Esc</code> → <code>:wq</code></li></ol>
+<p class="explica"><strong>🔍 Entendendo o vim</strong></p>
+<table>
+<tr><th>Tecla ou comando</th><th>O que faz</th></tr>
+<tr><td><code>vim index.html</code></td><td>abre o editor <code>vim</code> no arquivo <code>index.html</code> (e cria o arquivo, se ele não existir)</td></tr>
+<tr><td><code>i</code></td><td><em>insert</em>: entra no modo de digitar. O vim começa no modo de <strong>comandos</strong>, em que cada tecla é uma ordem, e não texto. Por isso nada aparece até apertar <code>i</code></td></tr>
+<tr><td><code>Esc</code></td><td>sai do modo de digitar e volta ao modo de comandos</td></tr>
+<tr><td><code>:wq</code></td><td><code>:</code> abre a linha de comandos do vim, no rodapé; <code>w</code> = <em>write</em> (salvar); <code>q</code> = <em>quit</em> (sair)</td></tr>
+<tr><td><code>:q!</code></td><td>a saída de emergência: sai <strong>sem salvar</strong></td></tr>
+</table>
+<p>Alternativa mais simples: <code>nano index.html</code>. No <code>nano</code> já se digita direto; <code>Ctrl+O</code> e <code>Enter</code> salvam, <code>Ctrl+X</code> sai. Para conferir o arquivo: <code>cat index.html</code>.</p>
+<ul><li><code>index.html</code> é o nome que os servidores web procuram por padrão quando se pede a página inicial (<code>/</code>).</li><li><code>&lt;h1&gt;</code> é um título e <code>&lt;p&gt;</code>, um parágrafo: é o mesmo HTML que o navegador recebe da NBA, só que menor.</li></ul></section>
+<section class="passo" id="t5-p2"><h3>Passo 2 — Novo: ligar o servidor</h3>
+<p><strong>Terminal 2:</strong></p>
+<pre class="cmd"><code>cd /workspace/aula-3/pratica/meu-site
+python3 -m http.server 8000</code></pre>
+<pre><code>Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>python3</code></td><td>o interpretador da linguagem Python, versão 3</td></tr>
+<tr><td><code>-m</code></td><td><em>module</em>: "rode este módulo como programa". Módulo = um pacote de código que já vem com o Python</td></tr>
+<tr><td><code>http.server</code></td><td>o módulo: um servidor web simples, que entrega os arquivos <strong>da pasta atual</strong> (por isso o <code>cd</code> antes)</td></tr>
+<tr><td><code>8000</code></td><td>a <strong>porta</strong> em que ele vai escutar. As portas abaixo de 1024 são reservadas aos serviços conhecidos (80, 443, 22…) e exigem administrador; 8000 e 8080 são as escolhas tradicionais para testes</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<ul><li><code>0.0.0.0</code> = escuta em todas as placas de rede da máquina.</li><li>O terminal fica "preso": o servidor está <strong>esperando pedidos</strong>. Não feche este terminal.</li></ul></section>
+<section class="passo" id="t5-p3"><h3>Passo 3 — Ver o servidor escutando</h3>
+<p><strong>Terminal 1:</strong></p>
+<pre class="cmd"><code>ss -tuln</code></pre>
+<pre><code>Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+udp   UNCONN 0      0         127.0.0.11:45126      0.0.0.0:*
+tcp   LISTEN 0      5            0.0.0.0:8000       0.0.0.0:*
+tcp   LISTEN 0      4096      127.0.0.11:37253      0.0.0.0:*</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>ss</code></td><td>o mesmo do tópico 2: lista os sockets</td></tr>
+<tr><td><code>-t</code> e <code>-u</code></td><td><strong>TCP</strong> e também <strong>UDP</strong></td></tr>
+<tr><td><code>-l</code></td><td><em>listening</em>: só quem está <strong>escutando</strong> (<code>LISTEN</code>), ou seja, os servidores</td></tr>
+<tr><td><code>-n</code></td><td>números em vez de nomes</td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<ul><li><code>0.0.0.0:8000 LISTEN</code> = <strong>o nosso servidor</strong>, esperando na porta 8000.</li><li><code>Netid</code> = o protocolo (<code>tcp</code> ou <code>udp</code>). <code>UNCONN</code> (<em>unconnected</em>) = o UDP não abre conexão, então nunca fica em <code>LISTEN</code> nem em <code>ESTAB</code>: só recebe pacotes.</li><li><code>Peer Address:Port</code> = <code>0.0.0.0:*</code>: "qualquer IP, qualquer porta". Ainda não há ninguém do outro lado.</li><li>Nas linhas <code>LISTEN</code>, o <code>Send-Q</code> é o tamanho da fila de espera: o Python aceita até 5 clientes aguardando ao mesmo tempo.</li><li>As linhas com <code>127.0.0.11</code> são o DNS interno do Docker (tópico 1), em UDP e em TCP (o DNS usa TCP para respostas grandes). A porta não é 53 porque o Docker desvia internamente o <code>127.0.0.11:53</code> do <code>resolv.conf</code> para essas portas.</li></ul></section>
+<section class="passo" id="t5-p4"><h3>Passo 4 — Ser o cliente</h3>
+<p><strong>Terminal 1:</strong></p>
+<pre class="cmd"><code>curl http://127.0.0.1:8000</code></pre>
+<pre><code>&lt;h1&gt;Meu servidor&lt;/h1&gt;
+&lt;p&gt;Este site roda no meu Kali.&lt;/p&gt;</code></pre>
+<p>O curl (o cliente) pediu a página ao servidor Python, que respondeu com o <code>index.html</code>.</p>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>http://</code></td><td>sem cadeado: o nosso servidor não tem certificado</td></tr>
+<tr><td><code>127.0.0.1</code></td><td>a <strong>própria máquina</strong> (o <em>loopback</em>, a placa <code>lo</code> do tópico 2). O pedido nem sai do contêiner</td></tr>
+<tr><td><code>:8000</code></td><td>a porta. Sem ela, o curl usaria a porta padrão do <code>http</code>, a 80, onde ninguém escuta (no <code>https</code>, o padrão é a 443)</td></tr>
+</table>
+<p>Agora com a resposta completa:</p>
+<pre class="cmd"><code>curl -i http://127.0.0.1:8000</code></pre>
+<pre><code>HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.14.8
+Date: Mon, 19 Oct 2026 16:41:29 GMT
+Content-type: text/html
+Content-Length: 57
+Last-Modified: Mon, 19 Oct 2026 16:41:28 GMT
+
+&lt;h1&gt;Meu servidor&lt;/h1&gt;
+&lt;p&gt;Este site roda no meu Kali.&lt;/p&gt;</code></pre>
+<ul><li><code>-i</code> (i <strong>minúsculo</strong>, <em>include</em>) mostra os <strong>cabeçalhos e o conteúdo</strong> (o <code>-I</code> do tópico 4 mostrava só os cabeçalhos).</li><li>A estrutura é a mesma da resposta da NBA, agora vinda do <strong>nosso</strong> servidor:</li></ul>
+<table>
+<tr><th>Linha</th><th>O que significa</th></tr>
+<tr><td><code>HTTP/1.0 200 OK</code></td><td><strong>deu certo</strong>. O curl pediu em HTTP/1.1, mas o servidor do Python responde na versão 1.0, mais simples</td></tr>
+<tr><td><code>Server: SimpleHTTP/0.6 Python/3.14.8</code></td><td>o servidor <strong>declara qual software e versão</strong> ele é. Guarde isto: na parte 2, o <code>nmap</code> descobre a versão justamente assim</td></tr>
+<tr><td><code>Date</code></td><td>quando a resposta foi gerada</td></tr>
+<tr><td><code>Content-type: text/html</code></td><td>o tipo do conteúdo. O Python deduz pela extensão <code>.html</code> do arquivo</td></tr>
+<tr><td><code>Content-Length: 57</code></td><td>o tamanho do <code>index.html</code>: 57 bytes (aqui, 1 byte por letra, espaço ou quebra de linha)</td></tr>
+<tr><td><code>Last-Modified</code></td><td>quando o arquivo foi alterado pela última vez. O navegador usa isso para saber se pode reaproveitar a cópia que já tem</td></tr>
+<tr><td>linha em branco</td><td>separa os cabeçalhos do conteúdo</td></tr>
+</table>
+<p><strong>Olhe o terminal 2.</strong> Apareceu o <strong>registro</strong> de cada pedido:</p>
+<pre><code>127.0.0.1 - - [19/Oct/2026 16:41:29] "GET / HTTP/1.1" 200 -</code></pre>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>127.0.0.1</code></td><td><strong>quem</strong> pediu (o IP do cliente)</td></tr>
+<tr><td><code>- -</code></td><td>dois campos do formato padrão de log (identidade e usuário logado). O Python não os usa e deixa um traço</td></tr>
+<tr><td><code>[19/Oct/2026 16:41:29]</code></td><td><strong>quando</strong></td></tr>
+<tr><td><code>"GET / HTTP/1.1"</code></td><td><strong>o quê</strong>: o método, a página e a versão do HTTP</td></tr>
+<tr><td><code>200</code></td><td><strong>o resultado</strong></td></tr>
+<tr><td><code>-</code> (o último)</td><td>o tamanho da resposta. O Python também deixa em branco</td></tr>
+</table>
+<p><strong>Ligação com segurança:</strong> todo servidor guarda registros assim. Numa investigação, os <strong>logs de acesso</strong> mostram quem acessou o quê, e quando.</p></section>
+<section class="passo" id="t5-p5"><h3>Passo 5 — Novo: ver o pedido cru do cliente, com <code>nc -l</code></h3>
+<p>O registro do Python resume o pedido. Para ver <strong>tudo</strong> o que o curl envia, vamos trocar o servidor por um "servidor de mentira", que só mostra o que recebe.</p>
+<p><strong>Terminal 2:</strong> aperte <code>Ctrl+C</code> para desligar o servidor Python e rode:</p>
+<pre class="cmd"><code>nc -l 8080</code></pre>
+<p><code>-l</code> (<em>listen</em>) = o <code>nc</code> vira <strong>servidor</strong> e escuta a porta 8080. Ele não responde nada: só mostra na tela o que chegar. A porta é outra (8080, e não 8000) só para não confundir com o servidor anterior.</p>
+<p><strong>Terminal 1:</strong></p>
+<pre class="cmd"><code>curl http://127.0.0.1:8080</code></pre>
+<p><strong>Terminal 2</strong> mostra o pedido exatamente como chegou:</p>
+<pre><code>GET / HTTP/1.1
+Host: 127.0.0.1:8080
+User-Agent: curl/8.22.0
+Accept: */*</code></pre>
+<table>
+<tr><th>Linha</th><th>O que significa</th></tr>
+<tr><td><code>GET / HTTP/1.1</code></td><td>o método (<code>GET</code>), a página (<code>/</code>) e a versão do HTTP</td></tr>
+<tr><td><code>Host: 127.0.0.1:8080</code></td><td>para qual site é o pedido</td></tr>
+<tr><td><code>User-Agent: curl/8.22.0</code></td><td><strong>quem o cliente diz ser</strong></td></tr>
+<tr><td><code>Accept: */*</code></td><td>que tipo de resposta o cliente aceita (qualquer uma)</td></tr>
+</table>
+<p><strong>Fecha a história do tópico 4:</strong> "Foi <strong>exatamente isto</strong> que a NBA recebeu. Ela leu <code>User-Agent: curl/8.22.0</code> e respondeu 403. Quando mandamos <code>-A "Mozilla/5.0"</code>, essa linha mudou."</p>
+<p>O terminal 1 fica esperando uma resposta que o nosso servidor de mentira não vai mandar. Aperte <code>Ctrl+C</code> <strong>nos dois terminais</strong>.</p></section>
+</section>
+<section id="p2-pratica"><h2>Parte 2 — Laboratório: o que um IP revela</h2>
+<p class="desafio"><strong>Desafio:</strong> <strong>No laboratório isolado, descubra o que o IP da "vítima" revela: quais portas estão abertas e qual software está rodando em cada uma. Depois, veja como esse ataque aparece do lado de quem é atacado.</strong></p>
+<p class="aviso">Tudo isto roda só no laboratório fechado, sem internet. Escanear um IP sem autorização é crime (Lei 12.737/2012 e Lei 14.155/2021).</p>
+<section class="passo" id="p2-p1"><h3>Passo 1 — Subir o laboratório</h3>
+<p>No computador, <strong>fora</strong> do contêiner (na pasta do projeto):</p>
+<pre class="cmd"><code>docker compose -f aula-3/laboratorio/docker-compose.yml up -d --build</code></pre>
+<p>Isso cria dois contêineres, <code>atacante</code> e <code>vitima</code>, numa rede isolada.</p>
+<p class="explica"><strong>🔍 Entendendo o comando:</strong> é o mesmo <code>docker compose up -d --build</code> da <a href="#p1-antes">parte 1</a>, com uma opção a mais:</p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>-f aula-3/laboratorio/docker-compose.yml</code></td><td><em>file</em>: usa <strong>esta</strong> receita, em vez do <code>docker-compose.yml</code> da pasta atual. Ela descreve a <code>vitima</code>, o <code>atacante</code> e a rede isolada</td></tr>
+</table>
+<p>Confira que subiram:</p>
+<pre class="cmd"><code>docker ps --format '{{.Names}}'</code></pre>
+<pre><code>atacante
+vitima</code></pre>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>docker ps</code></td><td><em>process status</em>: lista os contêineres <strong>ligados</strong></td></tr>
+<tr><td><code>--format '{{.Names}}'</code></td><td>em vez da tabela completa (ID, imagem, portas, tempo ligado…), mostra só o <strong>nome</strong> de cada contêiner. <code>{{.Names}}</code> é um molde que o Docker preenche; as aspas simples protegem as chaves</td></tr>
+</table></section>
+<section class="passo" id="p2-p2"><h3>Passo 2 — Entrar como o atacante</h3>
+<pre class="cmd"><code>docker exec -it atacante bash</code></pre>
+<p>O mesmo <code>docker exec -it … bash</code> da <a href="#p1-antes">parte 1</a>, agora abrindo um terminal <strong>dentro do <code>atacante</code></strong>. Tudo o que for digitado daqui em diante roda nele.</p></section>
+<section class="passo" id="p2-p3"><h3>Passo 3 — A trava de segurança: o laboratório não alcança a internet</h3>
+<pre class="cmd"><code>ping -c 2 8.8.8.8</code></pre>
+<pre><code>ping: connect: Network is unreachable</code></pre>
+<ul><li><code>ping -c 2 8.8.8.8</code> = 2 pings para o DNS do Google, direto pelo IP (sem depender de DNS).</li><li><code>Network is unreachable</code> = "rede inalcançável": o sistema nem chegou a enviar o pacote, porque não conhece nenhum caminho para fora. Confira com <code>ip r</code> (tópico 3): não existe a linha <code>default via</code>, ou seja, não há gateway.</li></ul>
+<p><strong>Aponte:</strong> a rede do laboratório foi criada com <code>internal: true</code>. Ela <strong>não tem saída para a internet</strong>. Mesmo que alguém errasse o alvo, nada sairia daqui. É assim que se monta um laboratório de segurança: <strong>fechado</strong>.</p></section>
+<section class="passo" id="p2-p4"><h3>Passo 4 — Descobrir o IP da vítima</h3>
+<p>Dentro do laboratório, os contêineres se acham pelo nome. Para ver o IP por trás do nome <code>vitima</code>:</p>
+<pre class="cmd"><code>getent hosts vitima</code></pre>
+<pre><code>172.23.0.2      vitima</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>getent</code></td><td><em>get entries</em>: busca uma entrada nas "agendas" do sistema, do mesmo jeito que os programas fazem</td></tr>
+<tr><td><code>hosts</code></td><td>qual agenda: a de nomes → IPs. Ela junta o arquivo <code>/etc/hosts</code> e o DNS do <code>/etc/resolv.conf</code> (tópico 1)</td></tr>
+<tr><td><code>vitima</code></td><td>o nome procurado. Quem responde é o DNS interno do Docker, que conhece o nome de cada contêiner da mesma rede</td></tr>
+</table>
+<p>A saída tem duas colunas: o IP e o nome.</p>
+<p>"A vítima é o <code>172.23.0.2</code>." A partir daqui, imagine que só temos esse número, como teríamos o IP de um site qualquer.</p></section>
+<section class="passo" id="p2-p5"><h3>Passo 5 — Novo: o reconhecimento com <code>nmap</code></h3>
+<pre class="cmd"><code>nmap vitima</code></pre>
+<pre><code>Starting Nmap 7.991 ( https://nmap.org ) at 2026-10-19 17:46 ...
+Nmap scan report for vitima (172.23.0.2)
+Host is up (0.0000060s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT     STATE SERVICE
+80/tcp   open  http
+8000/tcp open  http-alt</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando</strong></p>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>nmap</code></td><td><em>network mapper</em> (mapeador de rede), o "raio-x de portas". Ele tenta se conectar a muitas portas e relata o estado de cada uma. Sem opções, testa as <strong>1.000 portas mais comuns</strong></td></tr>
+<tr><td><code>vitima</code></td><td>o alvo: um nome ou um IP. O nmap traduz o nome pelo DNS, como o <code>getent</code></td></tr>
+</table>
+<p class="explica"><strong>🔍 Entendendo a saída</strong></p>
+<ul><li><code>Starting Nmap 7.991 … at …</code> = a versão do nmap e a hora do início.</li><li><code>Nmap scan report for vitima (172.23.0.2)</code> = o relatório deste alvo, com o nome e o IP.</li><li><code>Host is up (0.0000060s latency)</code> = a máquina está ligada e respondeu em 6 milionésimos de segundo: ela está no mesmo computador.</li><li><code>Not shown: 998 closed tcp ports (reset)</code> = em 998 portas <strong>ninguém atende</strong>. O <code>(reset)</code> diz como o nmap sabe: a vítima respondeu com um pacote <strong>RST</strong>, o "aqui não tem ninguém" do TCP.</li><li><code>PORT</code> = número/protocolo (<code>80/tcp</code>); <code>STATE</code> = o estado (tabela abaixo); <code>SERVICE</code> = um <strong>palpite</strong> pelo número da porta (a 8000 é tradicionalmente o <code>http-alt</code>, "HTTP alternativo"). O nmap ainda não conferiu o que roda ali: isso vem no passo 6.</li><li>As duas linhas <code>open</code> são o que interessa: a vítima expõe <strong>duas portas</strong> (80 e 8000), as duas de serviços web.</li></ul>
+<table>
+<tr><th>Estado</th><th>Significa</th></tr>
+<tr><td><code>open</code></td><td>tem um programa atendendo ali (a porta de entrada existe)</td></tr>
+<tr><td><code>closed</code></td><td>a máquina respondeu, mas nada atende nessa porta</td></tr>
+<tr><td><code>filtered</code></td><td>um firewall engoliu a sondagem: nem sim, nem não</td></tr>
+</table></section>
+<section class="passo" id="p2-p6"><h3>Passo 6 — Novo: descobrir o software e a versão</h3>
+<pre class="cmd"><code>nmap -sV -p 80,8000 vitima</code></pre>
+<pre><code>PORT     STATE SERVICE VERSION
+80/tcp   open  http    SimpleHTTPServer 0.6 (Python 3.14.8)
+8000/tcp open  http    SimpleHTTPServer 0.6 (Python 3.14.8)</code></pre>
+<ul><li><code>-sV</code>: o <code>-s</code> agrupa os tipos de varredura (<em>scan</em>) e o <code>V</code> é de <em>version</em>. Além de "aberta", o nmap conversa com cada porta, compara as respostas com um banco de assinaturas e descobre <strong>qual software</strong> atende e <strong>qual versão</strong> (<code>SimpleHTTPServer 0.6</code>, <code>Python 3.14.8</code>). É o mesmo texto do cabeçalho <code>Server:</code> que vimos com <code>curl -i</code> no <a href="#t5-p4">tópico 5</a>.</li><li><code>-p 80,8000</code> (<em>ports</em>) = olhe só essas portas, separadas por vírgula (mais rápido). Também aceita faixas: <code>-p 1-1000</code>.</li><li><code>VERSION</code> = a coluna nova na saída: o software e a versão.</li><li><strong>Esta é a parte perigosa do reconhecimento.</strong> Sabendo o software e a versão exatos, o atacante procura <strong>falhas conhecidas</strong> daquela versão (slide 2). "Software desatualizado + versão à mostra" é o prato cheio.</li></ul></section>
+<section class="passo" id="p2-p7"><h3>Passo 7 — Novo: o ataque visto pelo DEFENSOR</h3>
+<p>Abra um <strong>segundo terminal</strong> e entre na vítima:</p>
+<pre class="cmd"><code>docker exec -it vitima bash</code></pre>
+<p>O mesmo <code>docker exec</code> do passo 2, agora entrando na <code>vitima</code>. Rode-o num <strong>segundo terminal do seu computador</strong>, fora de qualquer contêiner.</p>
+<p>Veja o registro de acessos do site da porta 80:</p>
+<pre class="cmd"><code>cat /var/log/acesso.log</code></pre>
+<table>
+<tr><th>Pedaço</th><th>O que significa</th></tr>
+<tr><td><code>cat</code></td><td>mostra o conteúdo do arquivo (tópico 1)</td></tr>
+<tr><td><code>/var</code></td><td>a pasta de dados que <strong>variam</strong> com o uso: registros, filas, caches</td></tr>
+<tr><td><code>/var/log</code></td><td>onde ficam os <strong>registros (logs)</strong> do sistema e dos programas</td></tr>
+<tr><td><code>acesso.log</code></td><td>o log do site da porta 80. A receita do laboratório manda o servidor Python gravar ali cada pedido, no mesmo formato que vimos no <a href="#t5-p4">tópico 5</a></td></tr>
+</table>
+<pre><code>172.23.0.3 - - [19/Oct/2026 17:46:40] "POST /sdk HTTP/1.1" 501 -
+172.23.0.3 - - [19/Oct/2026 17:46:40] "GET /nmaplowercheck1792432000 HTTP/1.1" 404 -
+172.23.0.3 - - [19/Oct/2026 17:46:40] "GET /HNAP1 HTTP/1.1" 404 -
+172.23.0.3 - - [19/Oct/2026 17:46:40] "GET /evox/about HTTP/1.1" 404 -</code></pre>
+<p><strong>Aponte, linha por linha:</strong></p>
+<ul><li><code>172.23.0.3</code> = o <strong>IP do atacante</strong>. O scan deixou rastro: a vítima sabe <strong>quem</strong> a sondou.</li><li><code>GET /nmaplowercheck…</code>, <code>/HNAP1</code>, <code>/evox/about</code>, <code>POST /sdk</code> = a <strong>assinatura do nmap</strong>. Ele faz pedidos estranhos para adivinhar o software, e cada um fica gravado. Esses pedidos vêm do <code>nmap -sV</code> (passo 6); o <code>nmap</code> simples só bate na porta e vai embora, sem pedir página nenhuma.
+<ul><li><code>/nmaplowercheck1792432000</code>: uma página inventada, para ver como o servidor responde a algo que não existe. O número é a hora do scan contada em segundos desde 1970, o jeito como os computadores marcam o tempo.</li><li><code>/HNAP1</code>, <code>/sdk</code>, <code>/evox/about</code>: endereços que só existem em aparelhos específicos (o <code>/HNAP1</code> em roteadores domésticos, o <code>/sdk</code> em servidores VMware). Se a página existir, o nmap fica sabendo que tipo de máquina é.</li></ul></li><li><code>404</code> = <em>Not Found</em>: a página não existe. <code>501</code> = <em>Not Implemented</em>: o servidor do Python não sabe tratar pedidos <code>POST</code>.</li><li><strong>A lição de defesa:</strong> todo scan deixa rastro. Quem monitora logs <strong>percebe</strong> que está sendo sondado — muitas vezes o primeiro aviso de que um ataque vem vindo.</li></ul></section>
+<section class="passo" id="p2-p8"><h3>Passo 8 — Novo: a defesa mais básica, fechar a porta</h3>
+<p>Ainda na vítima, desligue o serviço da porta 8000:</p>
+<pre class="cmd"><code>kill $(ss -tlnp | grep ":8000" | grep -o "pid=[0-9]*" | cut -d= -f2)</code></pre>
+<p class="explica"><strong>🔍 Entendendo o comando.</strong> É uma linha só, mas são 5 comandos encaixados. O <code>$( … )</code> roda primeiro o que está dentro, e cada <code>|</code> passa o resultado para o comando seguinte, como no <code>whois | grep</code> do tópico 3:</p>
+<table>
+<tr><th>Etapa</th><th>O que faz</th><th>O que sobra (exemplo)</th></tr>
+<tr><td>1. <code>ss -tlnp</code></td><td>lista as portas TCP que estão escutando (<code>-t -l -n</code>), com o programa dono de cada uma (<code>-p</code>)</td><td>uma linha por porta, como <code>LISTEN 0 5 0.0.0.0:8000 0.0.0.0:* users:(("python3",pid=8,fd=3))</code></td></tr>
+<tr><td>2. <code>grep ":8000"</code></td><td>fica só com a linha que contém <code>:8000</code></td><td>a linha da porta 8000</td></tr>
+<tr><td>3. <code>grep -o "pid=[0-9]*"</code></td><td><code>-o</code> (<em>only</em>) recorta só o trecho que combina com o padrão: <code>pid=</code> seguido de algarismos (<code>[0-9]</code> = um algarismo; <code>*</code> = quantos houver)</td><td><code>pid=8</code></td></tr>
+<tr><td>4. <code>cut -d= -f2</code></td><td><code>cut</code> corta o texto em pedaços: <code>-d=</code> usa o <code>=</code> como separador (<em>delimiter</em>) e <code>-f2</code> pega o 2º pedaço (<em>field</em>)</td><td><code>8</code></td></tr>
+<tr><td>5. <code>kill $( … )</code></td><td>o <code>$( … )</code> é trocado pelo resultado, e a linha vira <code>kill 8</code>: um pedido para o programa número 8 (o servidor da porta 8000) encerrar</td><td>—</td></tr>
+</table>
+<p>O número do processo (PID) vai variar. <strong>Para explicar mais devagar,</strong> faça à mão: rode <code>ss -tlnp</code>, leia o <code>pid=</code> da linha <code>:8000</code> e rode <code>kill</code> com esse número. Volte ao terminal do <strong>atacante</strong> e escaneie de novo:</p>
+<pre class="cmd"><code>nmap vitima</code></pre>
+<pre><code>Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE
+80/tcp open  http</code></pre>
+<p><strong>Aponte:</strong> a porta 8000 <strong>sumiu</strong> do scan. Menos portas abertas = <strong>menos superfície de ataque</strong>. A defesa número um é simples: <strong>desligue e feche o que você não usa.</strong> O atacante só ataca o que consegue enxergar.</p></section>
+<section class="passo" id="p2-p9"><h3>Passo 9 — Encerrar o laboratório</h3>
+<p>Saia dos dois contêineres (<code>exit</code>) e, no computador:</p>
+<pre class="cmd"><code>docker compose -f aula-3/laboratorio/docker-compose.yml down</code></pre>
+<ul><li><code>exit</code> = sai do contêiner e volta ao terminal do seu computador.</li><li><code>down</code> = o contrário do <code>up</code>: desliga e <strong>apaga</strong> os contêineres e a rede do laboratório. A imagem continua guardada, então subir de novo é rápido.</li></ul></section>
+</section>
+<section id="resumo"><h2>Resumo dos comandos (Parte 1)</h2>
+<table>
+<tr><th>Pergunta</th><th>Comando</th><th>Explicação</th></tr>
+<tr><td>Quem é o meu DNS?</td><td><code>cat /etc/resolv.conf</code></td><td><a href="#t1-p1">T1 · passo 1</a></td></tr>
+<tr><td>Qual o IP desse nome?</td><td><code>host</code>, <code>nslookup</code>, <code>dig +short nome</code></td><td><a href="#t1-p2">T1 · passos 2 a 5</a></td></tr>
+<tr><td>Como o DNS chegou à resposta?</td><td><code>dig +trace +nodnssec nome</code></td><td><a href="#t1-p7">T1 · passo 7</a></td></tr>
+<tr><td>Qual é o meu IP?</td><td><code>hostname -I</code>, <code>ip -br a</code></td><td><a href="#t2-p1">T2 · passo 1</a></td></tr>
+<tr><td>O servidor responde?</td><td><code>ping -c 4 nome</code></td><td><a href="#t2-p2">T2 · passo 2</a></td></tr>
+<tr><td>A porta atende?</td><td><code>nc -zv nome porta</code></td><td><a href="#t2-p3">T2 · passo 3</a></td></tr>
+<tr><td>Com quem estou conversando?</td><td><code>ss -tn</code></td><td><a href="#t2-p4">T2 · passo 4</a></td></tr>
+<tr><td>Qual é o meu gateway?</td><td><code>ip r</code></td><td><a href="#t3-p1">T3 · passo 1</a></td></tr>
+<tr><td>Por onde os pacotes passam?</td><td><code>traceroute -m 15 nome</code>, <code>mtr -u -r -c 5 nome</code></td><td><a href="#t3-p3">T3 · passos 3 e 5</a></td></tr>
+<tr><td>De quem é este IP?</td><td><code>whois IP</code></td><td><a href="#t3-p4">T3 · passo 4</a></td></tr>
+<tr><td>O que o servidor responde?</td><td><code>curl -I https://nome</code></td><td><a href="#t4-p1">T4 · passo 1</a></td></tr>
+<tr><td>A viagem inteira</td><td><code>curl -v -I -A "Mozilla/5.0" https://nome</code></td><td><a href="#t4-p5">T4 · passo 5</a></td></tr>
+<tr><td>Quero ser o servidor</td><td><code>python3 -m http.server 8000</code>, <code>nc -l 8080</code></td><td><a href="#t5-p2">T5 · passos 2 e 5</a></td></tr>
+</table></section>
+</main>
+</div>
+<script>
+document.querySelectorAll('pre.cmd').forEach(function (pre) {
+  var b = document.createElement('button');
+  b.className = 'copiar';
+  b.textContent = 'copiar';
+  b.onclick = function () {
+    var text = pre.querySelector('code').innerText;
+    var done = function () { b.textContent = 'copiado!'; setTimeout(function () { b.textContent = 'copiar'; }, 1500); };
+    var fallback = function () {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      ta.remove(); done();
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  };
+  pre.appendChild(b);
+});
+</script>
+</body>
+</html>
